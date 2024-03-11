@@ -79,7 +79,7 @@ Nula ve sloupci týdně znamená, že daný učitel tento úvazek\unsure{co je u
     \centering
     \includegraphics[width=1\linewidth]{Figures/skupiny-ukazka.png}
     \caption{Ukázka sestavy rozdělení studentů do tříd}
-    \label{fig:enter-label}
+    \label{fig:ukazka-sestavy-tridy}
 
 \end{figure}
 \begin{figure}[H]
@@ -87,7 +87,7 @@ Nula ve sloupci týdně znamená, že daný učitel tento úvazek\unsure{co je u
     \centering
     \includegraphics[width=1\linewidth]{Figures/predmety-ukazka.png}
     \caption{Ukázka sestavy předměty}
-    \label{fig:enter-label}
+    \label{fig:ukazka-sestavy-predmety}
     
 \end{figure}
 \begin{figure}[H]
@@ -168,18 +168,44 @@ Na import XML se používá PHP extension SimpleXML. Je to jednoduchý způsob p
 
 
 \section{Databáze a mapování importu}
+
+Importy závisí na školní rok. Když vytvoříte školní rok nemáte žádná data. Každé hodnocení probíhá od začátku školního roku až po moment nejnovějšího importu.
+
 Ukládání importu do databáze probíhá pomocí ORM. Máme vytvořené třídy a Doctrine už je mapuje na tabulky v relační databázi. Doctrine dokáže mapovat celou řadu OOP konceptů jako dědičnost a kompozici.
 
 Uživatele máme řešené dědičností tak, že třídy \codename{Student} a \codename{Teacher} dědí z abstraktní třídy \codename{ImportedPerson} a ta dědí ze třídy \codename{User}. Takto uspořádaná hierarchie tříd má řadu výhod jako možnost dotazovat všechny importované osoby najednou. \improvement{toto se využívá v ... ref} Nevýhoda takovéhoto mapování je zvýšená komplexita pro ORM a potencionální degradace výkonu z databázové strany.
 
-Doctrine je ORM se silnou abstrakcí, což značně komplikuje samotné ukládání. Není totiž podporovaná operace UPSERT (v databázi PostgreSQL realizovanou pomocí jednoho dotazu INSERT INTO ... ON CONFLICT DO NOTHING). Je sice možné užít nativní SQL, ale tím bychom přišli o výhody ORM.
-Nevýhodou je pomalejší ukládání, to se dějě kvůli tomu, že Doctrine se snaží vytvořit graf daných entit, Doctrine interně používá identity map na entity takže je vyšší spotřeba RAM.
+Doctrine je ORM se silnou abstrakcí, což značně komplikuje samotné ukládání. Není totiž podporovaná operace (v databázi PostgreSQL realizovanou pomocí jednoho dotazu INSERT INTO ... ON CONFLICT DO UPDATE). Je sice možné užít nativní SQL, ale tím bychom přišli o výhody ORM.
+Nevýhodou je pomalejší ukládání, to se děje kvůli tomu, že Doctrine se snaží vytvořit graf daných entit, Doctrine interně používá identity map na entity takže je vyšší spotřeba RAM.
 
 
 
 \section{Inkrementální import}
 
+Zdroje importů nemusí poskytovat data o celém školním roce, v případě importu ze sestav se jedná o úvazky, kde se střídají skupiny u učitele (na naší škole např. mechatronika).
+ Nebo se během školního roku něco nečekaně změní.
 
+Proto umožňujeme inkrementální import, importuje se jen to nové a staré importy nechává nedotčené. Doporučuji dělat import před každým testovacím obdobím. Data ze starých importů není třeba odstraňovat (i staré úvazky, které už nemusí být platné lze hodnotit). 
+
+Entity spravované importem implementují interface \codename{ImportedEntity}.
+
+\begin{lstlisting}[language=PHP, caption={Zdrojový kód \codename{ImportedEntity}}]
+    interface ImportedEntity
+    {
+        public function getId(): mixed;
+    
+        public function getImportHash(): ?string;   
+
+        public function loadImportHash(): string;   
+        public function updateFromSelf(ImportedEntity $old): static;
+    }
+\end{lstlisting}
+
+V Doctrine se dělají hromadné operace po $N$ operacích. $N$ se dá zvolit experimentem.
+Po každých $N$ operacích se pak zavolají metody \codename{EntityManager.flush()} a \codename{EntityManager.clear()}. Dělá se to po inkrementech, aby \codename{UnitOfWork} byl schopen udělat možné optimalizace a aby se zamezilo zbytečnému procházení grafu entit. Operace clear pak vyčistí graf, to je důležité aby nedošlo k úniku paměti.
+
+\codename{ImportedEntity} má metody loadImportHash ta se používá ke vytvoření import hashe. Import hash se skládá z atributů, které unikátně identifikují danou entitu. Pro import nelze spoléhat na dané atributy, protože uživatel je může prostřednictvím administrace upravit. To by znamenalo, že při dalším importu bude stejná instance entity znovu vytvořena\footnote{Kdyby chtěl uživatel, aby byla při dalším importu vytvořena nová instance entity, může vymazat hodnotu import hashe.}.
+Import hash je využíván třídou 
 
 \section{O korcích importu}
 
