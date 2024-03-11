@@ -1,0 +1,106 @@
+\documentclass[czech,maturita,a4paper]{diploma}
+
+%todo notes setup 
+\usepackage[colorinlistoftodos,prependcaption,textsize=tiny]{todonotes}
+\definecolor{Plum}{RGB}{255,87,51}
+ \usepackage[utf8]{inputenc}
+% \usepackage{graphicx} % Required for inserting images
+% %bibilography setup
+
+% %czech language setup
+ % \usepackage[czech]{babel}
+
+
+% Packages
+\usepackage{float}
+
+\usepackage{fvextra}
+\usepackage[autostyle=true,czech=quotes]{csquotes} % korektni sazba uvozovek, podpora pro balik biblatex
+\usepackage[backend=biber, style=iso-numeric, alldates=iso,
+sorting=ynt,
+bibencoding=utf8,
+sortlocale=cs-CZ %sorts according to czech alphabet
+]{biblatex} % bibliografie
+\usepackage{dcolumn} % sloupce tabulky s ciselnymi hodnotami
+\usepackage{subfig} % makra pro "podobrazky" a "podtabulky"
+\usepackage[html]{diplomalst}
+
+
+
+%allows including of external tex files
+%used to include sections
+\usepackage{subfiles}
+
+\usepackage{xargs}% Use more than one optional parameter in a new commands
+% \usepackage[rgb, hyperref, dvipsname]{xcolor}  % Coloured text etc.
+%custom command mapping to better visualise TODOS
+\newcommandx{\unsure}[2][1=]{\todo[ linecolor=red,backgroundcolor=red!25,bordercolor=red,#1]{#2}}
+\newcommandx{\change}[2][1=]{\todo[ linecolor=blue,backgroundcolor=blue!25,bordercolor=blue,#1]{#2}}
+\newcommandx{\info}[2][1=]{\todo[ linecolor=OliveGreen,backgroundcolor=OliveGreen!25,bordercolor=OliveGreen,#1]{#2}}
+\newcommandx{\improvement}[2][1=]{\todo[ linecolor=Plum,backgroundcolor=Plum!25,bordercolor=Plum,#1]{#2}}
+\newcommandx{\thiswillnotshow}[2][1=]{\todo[disable,#1]{#2}}
+
+
+\addbibresource{references.bib} %Import the bibliography file
+
+
+%custom command to display code names
+\newcommand{\codename}[1]{\emph{#1}}
+
+
+% Parameters
+\ThesisAuthor{Marek Konrád}
+\ThesisSupervisor{RNDr. Rostislav Miarka, Ph.D.}
+\CzechThesisTitle{Vizeval: Evaluační nástroj výuky}
+\EnglishThesisTitle{Vizeval: Evaluation Tool for Education}
+\StudyProgram{Informační technologie}
+\SubmissionYear{2023/2024}
+\ThesisAssignmentFileName{zadani.pdf}
+
+
+%acronyms explained here
+\AddAcronym{XML}{Extensible Markup Language}
+\AddAcronym{PHP}{PHP: Hypertext Preprocessor}
+\AddAcronym{MVC}{Model View Controller}
+\AddAcronym{ORM}{Object Relational Mapping}
+\AddAcronym{CRUD}{Create Read Update Delete}
+\AddAcronym{SQL}{Structured query language}
+\AddAcronym{DQL}{Doctrine Query Language}
+
+
+\CzechAbstract{
+\improvement{improve abstract to catch readers attention}
+Tento dokument popisuje evaluační nástroj, který vynikl jako týmová dlouhodobá maturitní práce. Tento nástroj je realizován formou webové aplikace a zabývá se vzájemným hodnocením studentů a učitelů. Je koncipován pro prostředí střední školy.
+}
+\CzechKeywords{Evaluační nástroj; Škola; Webová aplikace; Symfony; Import; PHP}
+\EnglishAbstract{
+}
+\EnglishKeywords{}
+
+
+\Acknowledgement{Rád bych poděkoval Davidovi Moškořovi a Honzovi Radovi za spolupráci na tomto projektu. Děkuji panu učiteli Miarkovi za vedení práce. A v neposlední řadě děkuji vedení školy za možnost testovacího nasazení. }
+
+
+\begin{document}
+
+\MakeTitlePages
+
+\chapter{Úvod}
+\subfile{sections/uvod}
+
+\chapter{Postup vytvoření}
+\subfile{sections/postup}
+
+
+\chapter{Uživatelský manuál}
+formou přílohy ?
+
+\chapter{Závěr}
+budoucnost aplikace, zlepšení, co bych udělal jinak, 
+
+\printbibliography[title={Literatura}]
+
+\newpage
+\listoftodos[TODOS]
+
+\end{document}
