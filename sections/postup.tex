@@ -206,12 +206,25 @@ Po každých $N$ operacích se pak zavolají metody \codename{EntityManager.flus
 
 \codename{ImportedEntity} má metody loadImportHash ta se používá ke vytvoření import hashe. Import hash se skládá z atributů, které unikátně identifikují danou entitu. Pro import nelze spoléhat na dané atributy, protože uživatel je může prostřednictvím administrace upravit. To by znamenalo, že při dalším importu bude stejná instance entity znovu vytvořena\footnote{Kdyby chtěl uživatel, aby byla při dalším importu vytvořena nová instance entity, může vymazat hodnotu import hashe.}.
 Import hash je využíván třídou \codename{ImportedEntityUpsertProcessor}. Ten se stará o upsert importovaných entit.
-\codename{ImportedEntityUpsertProcessor} načte při upsertu všechny instance ukládané entity. Potom vytvoří \codename{entityMap}, což je mapa import hashů na id.  
+\codename{ImportedEntityUpsertProcessor} načte při upsertu všechny instance ukládané entity.
+Potom vytvoří \codename{entityMap}, což je mapa import hashů na id.
+Pak se prochází instance entit, které byly přávě naimportovány a pokuď nejsou v \codename{entityMap} tak se uloží pomocí hromadné operace a staré \codename{ImportedEntity} se upraví pomocí metody \codename{updateFromSelf}\footnote{Tato operace nemusí být využita}.
+
 
 \section{O korcích importu}
 
+Kroky importu jsou nezávislé na zdroji importu. 
+Jedná se o import wizzard, kdy konečný automat(FSM) rozhoduje o dalším možném stavu. 
+Jako implementaci konečného automatu používám Symfony Workflow.
+\improvement{Diagram workflow}
+U definice tohoto konečného automatu je v metadatech stavu uložen presenter, který má za úkol zobrazení a zpracování daného stavu.
 
+Tím, že presenter vrací pohled je možné, aby krok importu vypadal jakkoliv.
+K importu bylo využito hodně packagů ze Symfony UX.
+Používám Symfony Form na formulář pro zadání souborů a genrování emailu.
+Na spojování skupin používám LiveComponent, takže celý import obsahuje jen minimum JavaScriptu.
 
+Zpracování jednotlivých kroků může trvat dlouho, a proto používám na přechody mezi kroky Hotwire Turbo, to je koncipováno jako náhrada za klasické SPA aplikace.
 
 
 \section{Generování emailů z uživatelských dat}
