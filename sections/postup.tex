@@ -205,7 +205,8 @@ V Doctrine se dělají hromadné operace po $N$ operacích. $N$ se dá zvolit ex
 Po každých $N$ operacích se pak zavolají metody \codename{EntityManager.flush()} a \codename{EntityManager.clear()}. Dělá se to po inkrementech, aby \codename{UnitOfWork} byl schopen udělat možné optimalizace a aby se zamezilo zbytečnému procházení grafu entit. Operace clear pak vyčistí graf, to je důležité aby nedošlo k úniku paměti.
 
 \codename{ImportedEntity} má metody loadImportHash ta se používá ke vytvoření import hashe. Import hash se skládá z atributů, které unikátně identifikují danou entitu. Pro import nelze spoléhat na dané atributy, protože uživatel je může prostřednictvím administrace upravit. To by znamenalo, že při dalším importu bude stejná instance entity znovu vytvořena\footnote{Kdyby chtěl uživatel, aby byla při dalším importu vytvořena nová instance entity, může vymazat hodnotu import hashe.}.
-Import hash je využíván třídou 
+Import hash je využíván třídou \codename{ImportedEntityUpsertProcessor}. Ten se stará o upsert importovaných entit.
+\codename{ImportedEntityUpsertProcessor} načte při upsertu všechny instance ukládané entity. Potom vytvoří \codename{entityMap}, což je mapa import hashů na id.  
 
 \section{O korcích importu}
 
