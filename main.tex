@@ -1,3 +1,5 @@
+%! TEX root = main.tex
+
 \documentclass[czech,maturita,a4paper]{diploma}
 
 %todo notes setup 
@@ -23,13 +25,20 @@ sortlocale=cs-CZ %sorts according to czech alphabet
 \usepackage[php]{diplomalst}
 
 
-%allows including of external tex files
-%used to include sections
-\usepackage{subfiles}
 
 \usepackage{xargs}% Use more than one optional parameter in a new commands
 % \usepackage[rgb, hyperref, dvipsname]{xcolor}  % Coloured text etc.
 %custom command mapping to better visualise TODOS
+
+
+
+
+%allows including of external tex files
+%used to include sections
+\usepackage{subfiles}
+
+
+
 \newcommandx{\unsure}[2][1=]{\todo[ linecolor=red,backgroundcolor=red!25,bordercolor=red,#1]{#2}}
 \newcommandx{\change}[2][1=]{\todo[ linecolor=blue,backgroundcolor=blue!25,bordercolor=blue,#1]{#2}}
 \newcommandx{\info}[2][1=]{\todo[ linecolor=OliveGreen,backgroundcolor=OliveGreen!25,bordercolor=OliveGreen,#1]{#2}}
@@ -71,10 +80,12 @@ Tento dokument popisuje evaluační nástroj, který vynikl jako týmová dlouho
 \CzechKeywords{Evaluační nástroj; Škola; Webová aplikace; Symfony; Import; PHP}
 \EnglishAbstract{
 }
+
 \EnglishKeywords{}
 
 
 \Acknowledgement{Rád bych poděkoval Davidovi Moškořovi a Honzovi Radovi za spolupráci na tomto projektu. Děkuji panu učiteli Miarkovi za vedení práce. A v neposlední řadě děkuji vedení školy za možnost testovacího nasazení. }
+
 
 
 \begin{document}
@@ -82,7 +93,11 @@ Tento dokument popisuje evaluační nástroj, který vynikl jako týmová dlouho
 \MakeTitlePages
 
 \chapter{Úvod}
-\subfile{sections/uvod}
+\subfile{sections/uvod/motivace.tex}
+\subfile{sections/uvod/cile.tex}
+\subfile{sections/uvod/podobne-projekty.tex}
+\subfile{sections/uvod/pouzite-technologie.tex}
+
 
 \chapter{Postup vytvoření}
 \subfile{sections/postup}

@@ -1,0 +1,16 @@
+\section{Použité technologie}
+
+Používáme framework \href{https://symfony.com/}{Symfony}. Symfony je open-source PHP framework, který je vydán pod MIT licencí.  Využívá návrhový vzor MVC a moderní PHP. Symfony je modulární a jednoduše rozšiřitelný pomocí existujících bundlů/componentů. To je jeden z hlavních důvodů, proč byl tento framework vybrán. Již spoustu problémů řeší za nás a zamezuje tím bezpečnostním a jiným chybám.
+
+\subsection{Databáze}
+Používáme Symfony společně s Doctrine ORM, to nám poskytuje řadu výhod jako typesafe mapování, nezávislost na databázi\footnote{Doctrine ORM aktuálně podporuje PostgreSQL, MySQL, Oracle, SQL server a další\cite{doctrine-supported-dbs}}. S Doctrine používáme přístup code first, napíšeme standardní PHP třídu, kde pomocí atributů přidáme vlastnostem informace o jejich mapování. 
+\unsure{Pridat example}
+Pro uchovávání dat používáme relační databázi PostgreSQL, ta podporuje  pokročilejší funkce jako transakce DDL narozdíl od MySQL.  
+
+\subsection{Symfony EasyAdmin}
+Za zmíňku stojí Symfony EasyAdmin, který dokáže vytvořit pro danou entitu CRUD stránku, která je jednoduše upravitelná.
+
+\subsection{Serverové technologie}
+Jako web server používáme FrankenPHP, moderní php server založený na serveru Caddy. FrankenPHP podporuje worker mode, který umožňuje znovu použití PHP interpretoru při dalším requestu.
+
+Naše aplikace je nasazována pomocí dockeru. Pro každou školu máme zvlášť container s databázovým a webovým serverem. Jako reverse proxy používáme Traefic, který nám umožňuje jednoduchou správu instancí.

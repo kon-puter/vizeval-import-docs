@@ -26,20 +26,6 @@ Většina škol používá systém Bakaláři a na něj se bude zaměřovat impo
 Všechny dotazované školy mají emaily od Microsoftu nebo Googlu.
 Přihlašování bude probíhat pomocí emailu. Uživatelé se budou moci přihlásit do portálu pomocí protokolu OAuth, který podporují oba provozovatelé. Výhodou tohoto způsobu přihlašování je, že naše aplikace neukládá hesla. Alternativně je možné ukládat heslo\footnote{Zahashované funkcí Bcrypt} do lokální databáze.
 
-\section{Použité technologie}
-
-Používáme framework \href{https://symfony.com/}{Symfony}. Symfony je open-source PHP framework, který je vydán pod MIT licencí.  Využívá návrhový vzor MVC a moderní PHP. Symfony je modulární a jednoduše rozšiřitelný pomocí existujících bundlů/componentů. To je jeden z hlavních důvodů, proč byl tento framework vybrán. Již spoustu problémů řeší za nás a zamezuje tím bezpečnostním a jiným chybám.
-
-Používáme Symfony společně s Doctrine ORM, to nám poskytuje řadu výhod jako typesafe mapování, nezávislost na databázi\footnote{Doctrine ORM aktuálně podporuje PostgreSQL, MySQL, Oracle, SQL server a další\cite{doctrine-supported-dbs}}. S Doctrine používáme přístup code first, napíšeme standardní PHP třídu, kde pomocí atributů přidáme vlastnostem informace o jejich mapování. 
-\unsure{Pridat example}
-Za zmíňku stojí Symfony EasyAdmin, který dokáže vytvořit pro danou entitu CRUD stránku, která je jednoduše upravitelná.
-
-Jako web server používáme FrankenPHP, moderní php server založený na serveru Caddy. FrankenPHP podporuje worker mode, který umožňuje znovu použití PHP interpretoru při dalším requestu.
-
-Pro uchovávání dat používáme relační databázi PostgreSQL, ta podporuje  pokročilejší funkce jako transakce DDL, narozdíl od MySQL.  
-
-Naše aplikace je nasazována pomocí dockeru. Pro každou školu máme zvlášť container s databázovým a webovým serverem. Jako reverse proxy používáme Traefic, který nám umožňuje jednoduchou správu instancí.
-
 
 
 \section{Návrh databáze}
@@ -197,7 +183,7 @@ Entity spravované importem implementují interface \codename{ImportedEntity}.
         public function getImportHash(): ?string;   
 
         public function loadImportHash(): string;   
-        public function updateFromSelf(ImportedEntity $old): static;
+        public function updateFromSelf(ImportedEntity \$old): static;
     }
 \end{lstlisting}
 
@@ -214,17 +200,19 @@ Pak se prochází instance entit, které byly přávě naimportovány a pokuď n
 \section{O korcích importu}
 
 Kroky importu jsou nezávislé na zdroji importu. 
-Jedná se o import wizzard, kdy konečný automat(FSM) rozhoduje o dalším možném stavu. 
+Jedná se o import wizard, kdy konečný automat(FSM) rozhoduje o dalším možném stavu. 
 Jako implementaci konečného automatu používám Symfony Workflow.
 \improvement{Diagram workflow}
 U definice tohoto konečného automatu je v metadatech stavu uložen presenter, který má za úkol zobrazení a zpracování daného stavu.
 
 Tím, že presenter vrací pohled je možné, aby krok importu vypadal jakkoliv.
-K importu bylo využito hodně packagů ze Symfony UX.
-Používám Symfony Form na formulář pro zadání souborů a genrování emailu.
+K importu bylo využito hodně knihoven ze Symfony UX.
+Používám Symfony Form na formulář pro zadání souborů a generování emailu.
 Na spojování skupin používám LiveComponent, takže celý import obsahuje jen minimum JavaScriptu.
 
 Zpracování jednotlivých kroků může trvat dlouho, a proto používám na přechody mezi kroky Hotwire Turbo, to je koncipováno jako náhrada za klasické SPA aplikace.
+Celý krok je v HTML elementu \codename{turbo-frame\unsure{turbo element name ?}}, ten je při odeslání formu nahrazen novým framem\footnote{Není úplně nahrazen, ale je pomocí DOM morph knihovny upraven}. 
+
 
 
 \section{Generování emailů z uživatelských dat}
