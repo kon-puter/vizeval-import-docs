@@ -203,6 +203,13 @@ Kroky importu jsou nezávislé na zdroji importu.
 Jedná se o import wizard, kdy konečný automat(FSM) rozhoduje o dalším možném stavu. 
 Jako implementaci konečného automatu používám Symfony Workflow.
 \improvement{Diagram workflow}
+
+\begin{sidewaysfigure}
+	\centering
+  \includesvg{Figures/import-diagram.svg}
+  \caption{Diagram konečného automatu pro koky importu}
+\end{sidewaysfigure}
+
 U definice tohoto konečného automatu je v metadatech stavu uložen presenter, který má za úkol zobrazení a zpracování daného stavu.
 
 Tím, že presenter vrací pohled je možné, aby krok importu vypadal jakkoliv.

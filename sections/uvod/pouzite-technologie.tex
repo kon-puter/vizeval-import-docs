@@ -1,16 +1,36 @@
 \section{Použité technologie}
 
 Používáme framework \href{https://symfony.com/}{Symfony}. Symfony je open-source PHP framework, který je vydán pod MIT licencí.  Využívá návrhový vzor MVC a moderní PHP. Symfony je modulární a jednoduše rozšiřitelný pomocí existujících bundlů/componentů. To je jeden z hlavních důvodů, proč byl tento framework vybrán. Již spoustu problémů řeší za nás a zamezuje tím bezpečnostním a jiným chybám.
+Za zmíňku stojí Symfony EasyAdmin, který dokáže vytvořit pro danou entitu CRUD stránku, která je jednoduše upravitelná.
 
 \subsection{Databáze}
 Používáme Symfony společně s Doctrine ORM, to nám poskytuje řadu výhod jako typesafe mapování, nezávislost na databázi\footnote{Doctrine ORM aktuálně podporuje PostgreSQL, MySQL, Oracle, SQL server a další\cite{doctrine-supported-dbs}}. S Doctrine používáme přístup code first, napíšeme standardní PHP třídu, kde pomocí atributů přidáme vlastnostem informace o jejich mapování. 
 \unsure{Pridat example}
 Pro uchovávání dat používáme relační databázi PostgreSQL, ta podporuje  pokročilejší funkce jako transakce DDL narozdíl od MySQL.  
 
-\subsection{Symfony EasyAdmin}
-Za zmíňku stojí Symfony EasyAdmin, který dokáže vytvořit pro danou entitu CRUD stránku, která je jednoduše upravitelná.
-
 \subsection{Serverové technologie}
 Jako web server používáme FrankenPHP, moderní php server založený na serveru Caddy. FrankenPHP podporuje worker mode, který umožňuje znovu použití PHP interpretoru při dalším requestu.
 
-Naše aplikace je nasazována pomocí dockeru. Pro každou školu máme zvlášť container s databázovým a webovým serverem. Jako reverse proxy používáme Traefic, který nám umožňuje jednoduchou správu instancí.
+Naše aplikace je nasazována pomocí dockeru. Pro každou školu máme zvlášť container s databázovým a webovým serverem.
+Jako reverse proxy používáme Traefic, který nám umožňuje jednoduchou správu instancí.
+
+\subsection{Frontendové technologie}
+
+U importu používám balíky z iniciativy \href{https://ux.symfony.com/}{Symfony UX} jako forntendové řešení.
+Celý import obsahuje úplné minimum JavaScriptu, ten je navíc ve Stimulus controllerech. Označí se HTML element, na který chci aby se kontroler připojil a potom mám přístup k targetům daného kontroleru.
+Taky používám Hotwire Turbo\label{ux-turbo}, které jednoduše napodobuje funkcionalitu SPA, Turbo funguje skvěle se Stimulusem.
+Na některé části používám LiveComponent, což je něco jako Phoenix LiveWire, kde je uživatelské rozhraní řízeno přímo ze strany serveru. 
+Některé formuláře jsou sestavované pomocí Symfony Form, ten se potom stará o mapování vstupu a validaci\footnote{Na validaci používá Symfony Validator.}.
+Symfony Form vygeneruje přímo HTML form se všemi potřebnými náležitostmi jako zpracování chyb a stylování\footnote{Jako styl je možno specifikovat template. My používáme Bootstrap}, taky zamezuje XSRF útokům\footnote{Do formuláře vkládá XSRF token, který potom validuje.}.
+
+\subsection{Konečný automat}
+
+Je abstraktní automat, který může být v přávě jednom stavu. Když automat přechází z jednoho stavu do druhého nazývá se to přechod.
+Automat se nazývá konečným, protože má jen konečný počet stavů.
+Využívají se pro parsování formálních jazyků a jsou užitečné při modelování logiky aplikace.
+Mezi jiná využití patří parsování regularních výrazů.
+
+Jako implementaci konečného automatu používám Symfony Workflow.
+Taky je konečný automat používán při zvýrazňování výrazů pro generování emailů v editoru Ace.
+
+
