@@ -30,7 +30,7 @@ sortlocale=cs-CZ %sorts according to czech alphabet
 % \usepackage[rgb, hyperref, dvipsname]{xcolor}  % Coloured text etc.
 %custom command mapping to better visualise TODOS
 
-\usepackage{svg}
+\usepackage[inkscapeformat=png]{svg}
 
 
 %allows including of external tex files
@@ -52,6 +52,9 @@ sortlocale=cs-CZ %sorts according to czech alphabet
 %custom command to display code names
 \newcommand{\codename}[1]{\emph{#1}}
 
+
+%custom command to cross reference with viz
+\newcommand{\vizref}[1]{(viz \ref{#1})}
 
 % Parameters
 \ThesisAuthor{Marek Konrád}
@@ -107,7 +110,7 @@ Tento dokument popisuje evaluační nástroj, který vynikl jako týmová dlouho
 formou přílohy ?
 
 \chapter{Závěr}
-budoucnost aplikace, zlepšení, co bych udělal jinak, 
+  budoucnost aplikace, zlepšení, co bych udělal jinak, 
 
 \printbibliography[title={Literatura}]
 

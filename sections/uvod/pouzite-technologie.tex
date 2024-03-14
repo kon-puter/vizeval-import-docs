@@ -23,7 +23,7 @@ Na některé části používám LiveComponent, což je něco jako Phoenix LiveW
 Některé formuláře jsou sestavované pomocí Symfony Form, ten se potom stará o mapování vstupu a validaci\footnote{Na validaci používá Symfony Validator.}.
 Symfony Form vygeneruje přímo HTML form se všemi potřebnými náležitostmi jako zpracování chyb a stylování\footnote{Jako styl je možno specifikovat template. My používáme Bootstrap}, taky zamezuje XSRF útokům\footnote{Do formuláře vkládá XSRF token, který potom validuje.}.
 
-\subsection{Konečný automat}
+  \subsection{Konečný automat}\label{uvod:konecny-automat}
 
 Je abstraktní automat, který může být v přávě jednom stavu. Když automat přechází z jednoho stavu do druhého nazývá se to přechod.
 Automat se nazývá konečným, protože má jen konečný počet stavů.

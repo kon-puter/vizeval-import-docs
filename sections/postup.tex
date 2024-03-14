@@ -1,4 +1,4 @@
-\section{Upřesnění požadavků}
+\section{Průzkum požadavků škol}
 \change{rephrase}
 Tvorba začala zjištěním požadavků. Udělal jsem Google formulář, který primárně zjišťoval informace o školním systému. Pomocí vedení školy byl pak rozeslán na spřátelené střední školy. 
 \subsection{Výsledky průzkumu informačních systémů středních škol}
@@ -194,35 +194,53 @@ Po každých $N$ operacích se pak zavolají metody \codename{EntityManager.flus
 Import hash je využíván třídou \codename{ImportedEntityUpsertProcessor}. Ten se stará o upsert importovaných entit.
 \codename{ImportedEntityUpsertProcessor} načte při upsertu všechny instance ukládané entity.
 Potom vytvoří \codename{entityMap}, což je mapa import hashů na id.
-Pak se prochází instance entit, které byly přávě naimportovány a pokuď nejsou v \codename{entityMap} tak se uloží pomocí hromadné operace a staré \codename{ImportedEntity} se upraví pomocí metody \codename{updateFromSelf}\footnote{Tato operace nemusí být využita}.
+Pak se prochází instance entit, které byly právě naimportovány a pokud nejsou v \codename{entityMap} tak se uloží pomocí hromadné operace a staré \codename{ImportedEntity} se upraví pomocí metody \codename{updateFromSelf}\footnote{Tato operace nemusí být využita}.
 
 
 \section{O korcích importu}
 
 Kroky importu jsou nezávislé na zdroji importu. 
-Jedná se o import wizard, kdy konečný automat(FSM) rozhoduje o dalším možném stavu. 
-Jako implementaci konečného automatu používám Symfony Workflow.
+Jedná se o import wizard, kdy konečný automat \vizref{uvod:konecny-automat} rozhoduje o dalším možném stavu. 
+Na obrázku \ref{postup:import-diagram} je diagram korků importu.
 \improvement{Diagram workflow}
 
 \begin{sidewaysfigure}
 	\centering
-  \includesvg{Figures/import-diagram.svg}
+  \includegraphics[width=1\linewidth]{Figures/import-diagram.png}
   \caption{Diagram konečného automatu pro koky importu}
+  \label{postup:import-diagram}
 \end{sidewaysfigure}
 
 U definice tohoto konečného automatu je v metadatech stavu uložen presenter, který má za úkol zobrazení a zpracování daného stavu.
+Presenter je vlastně interface. Presentery jednotlivých kroků jsou buď přímo implementují interface nebo dědí z abstraktních tříd
+pro jednotlivé použité frontendové technologie (\codename{LiveComponentPresenter}, \codename{FormPresenter}\unsure{fact check names}).
 
 Tím, že presenter vrací pohled je možné, aby krok importu vypadal jakkoliv.
 K importu bylo využito hodně knihoven ze Symfony UX.
 Používám Symfony Form na formulář pro zadání souborů a generování emailu.
 Na spojování skupin používám LiveComponent, takže celý import obsahuje jen minimum JavaScriptu.
 
-Zpracování jednotlivých kroků může trvat dlouho, a proto používám na přechody mezi kroky Hotwire Turbo, to je koncipováno jako náhrada za klasické SPA aplikace.
+Zpracování jednotlivých kroků může trvat dlouho, a proto používám na přechody mezi kroky Hotwire Turbo \vizref{ux-turbo}.
 Celý krok je v HTML elementu \codename{turbo-frame\unsure{turbo element name ?}}, ten je při odeslání formu nahrazen novým framem\footnote{Není úplně nahrazen, ale je pomocí DOM morph knihovny upraven}. 
 
 
 
 \section{Generování emailů z uživatelských dat}
 
+Tím, že zdroje importu nemusí nutně poskytovat email, umožňuji generování emailu.
+Emaily se generují jak studentské, tak učitelské.
+
+Emaily se generují pomocí speciálních výrazů.
+Výrazy jsem vymýšlel tak, aby byly pro uživatele co nejjednodušší.
+Skládají se z řetězcových proměnných a konstant, hodnoty proměnných a konstant se potom spojí do jednoho výsledného řetězce, který je potom validován zda se jedná o email. V případě, že řetězec není validní email nastaví se u daného uživatele tag vyžaduje úpravu. 
+
+Proměnné jsou ve výrazu ohraničeny \textit{()}. Závorky můžou být validní v emailu pokud je lokální část emailu ohraničena uvozovkami\cite{wiki-email-address}. To by však neměl být problém, jelikož RFC5321 specifikuje, že emailové schránky, které se využívají k posílání emailů by neměly mít lokální část ohraničenou uvozovkami\cite{rfc5321}.
+
+Proměnná se dá vložit celá \textit{(jmeno)}, znak \textit{(jmeno[1])} nebo rozsah znaků \textit{(jmeno[1:3])}.
+Ukázkový výraz pro studenty naší školy by tedy mohl vypadat takto \textit{(jmeno[1]).(prijmeni).st@spseiostrava.cz}.
+
+Tento krok importu je realizován pomocí Symfony Form. Zajímavý je vstup do kterého se zadává emailový výraz. Jedná se o samotný formulářový typ, ty se dají do sebe vnořovat a výsledný formulář má taktéž typ formuláře. 
+
+To pole využívá editor Ace, který je velice přizpůsobitelný, ať už vzhledově nebo funkčně. Rozšířil jsem Ace, aby se choval jako formulářový prvek a přidal jsem zvýrazňování emailových výrazů.
 \section{Deduplikace generovaných emailů}
 
