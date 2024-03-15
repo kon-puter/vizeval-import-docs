@@ -242,5 +242,19 @@ Ukázkový výraz pro studenty naší školy by tedy mohl vypadat takto \textit{
 Tento krok importu je realizován pomocí Symfony Form. Zajímavý je vstup do kterého se zadává emailový výraz. Jedná se o samotný formulářový typ, ty se dají do sebe vnořovat a výsledný formulář má taktéž typ formuláře. 
 
 To pole využívá editor Ace, který je velice přizpůsobitelný, ať už vzhledově nebo funkčně. Rozšířil jsem Ace, aby se choval jako formulářový prvek a přidal jsem zvýrazňování emailových výrazů.
+
 \section{Deduplikace generovaných emailů}
 
+Při generování výrazů může nastat duplicita emailů.
+Na naší škole se musí duplicita řešit u zhruba 2\% studentů.
+Duplikátů je malý počet a jejich řešení se řeší manuálně.
+Při řešení změně emailů může dojít k jiné kolizi emailů to se řeší tak, že tento krok probíhá dokud existují duplikátní emaily. Kolize muže nastat mezi emaily jakýchkoliv importovaných uživatelů, prakticky to znamená, že může nastat kolize studentského a učitelského emailu.
+
+Tento problém mi z velké části pomáhá řešit Doctrine mapováním dědičnosti.
+Neprovádí se dotaz s entitou \codename{Student} nebo \codename{Teacher}, ale dotazuje se přímo z entitou \codename{ImportedPerson}\footnote{V Doctrine se dotazuje pomocí DQL a dotazuje se objektový model a ne relační schéma.}.
+Jedná se o vnořený dotaz.
+Vnější dotaz vybere importované osoby, které obsahují email z výsledku vnitřního dotazu (operátor \textsc{IN}).
+Ve vnitřním dotazu se vyberou emaily, které nejsou unikátní. V praxi jsem však dotazy musel rozdělit na dva.\unsure{potencial fix ?}
+
+Tento krok je realizován čistě pomocí Symfony Form. Celý formulář se skládá z pole \codename{CollectionType}\unsure{fact check pls} a \codename{SubmitType}.
+Jako typ kolekce je určen typ formuláře pro importované osoby. Takto nastavený Symfony Form jednoduše určí velikost výsledného formuláře na základě počtu prvků v poli. A při zpracování formuláře mi poskytne zvalidované pole importovaných osob.
