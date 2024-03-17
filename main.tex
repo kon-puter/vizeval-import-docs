@@ -27,10 +27,11 @@ sortlocale=cs-CZ %sorts according to czech alphabet
 
 
 \usepackage{xargs}% Use more than one optional parameter in a new commands
-% \usepackage[rgb, hyperref, dvipsname]{xcolor}  % Coloured text etc.
-%custom command mapping to better visualise TODOS
+\usepackage[rgb, hyperref]{xcolor}  % Coloured text etc.
 
-\usepackage[inkscapeformat=png]{svg}
+\usepackage{minted}
+\usepackage{tcolorbox}
+\usepackage{etoolbox}
 
 
 %allows including of external tex files
@@ -49,12 +50,37 @@ sortlocale=cs-CZ %sorts according to czech alphabet
 \addbibresource{references.bib} %Import the bibliography file
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 %custom command to display code names
 \newcommand{\codename}[1]{\texttt{#1}}
 
 
 %custom command to cross reference with viz
 \newcommand{\vizref}[1]{(viz \ref{#1})}
+
+\newenvironment{code}[1][h]{
+  \begin{listing}[#1]
+  \captionsetup{type=listing}
+}
+{
+  \end{listing}  
+}
+
+\BeforeBeginEnvironment{minted}{\begin{tcolorbox}}%
+\AfterEndEnvironment{minted}{\end{tcolorbox}}%
 
 % Parameters
 \ThesisAuthor{Marek Konrád}
@@ -93,8 +119,8 @@ Tento dokument popisuje evaluační nástroj, který vynikl jako týmová dlouho
 
 \begin{document}
 
-\MakeTitlePages
 
+\MakeTitlePages
 \chapter{Úvod}
 \subfile{sections/uvod/motivace.tex}
 \subfile{sections/uvod/cile.tex}

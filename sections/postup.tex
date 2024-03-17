@@ -30,6 +30,23 @@ Přihlašování bude probíhat pomocí emailu. Uživatelé se budou moci přihl
 
 \section{Návrh databáze}
 
+Při návrhu databáze jsme počítali, že aplikace bude jen pro jednu školu (single tenant), prakticky to znamená, že nebude entita škola. 
+Podpora nasazení pro více škol je řešena pomocí konteinerizace.
+Entity, které jsou importovány jsou úzce modelované podle zdrojů importu.
+
+Rozhodli jsme se, že \codename{EvaluationUnit}\footnote{Jedná se o úvazek, který je hodnocen. Je spojením učitele, skupiny, předmětu. Někdy v kódu importu nazýván \codename{TaughtSubject}.} 
+nebude mít M:N vztah se skupinami, to zjednodušuje celou aplikaci, až na import kde je potřeba spojovat více skupin do jedné skupiny.
+Existuje však \codename{MultiClassGroup}, což je skupina složená z více skupin, ta je však pouze použita v kroku spojování skupin (\improvement{ref spojovani skupin here}).
+Tato entita je nutná, aby bylo možné opustit import a později se k němu vrátit.
+
+Údaje o importech se nachází v \codename{ImportStatus}. Ten má relace na všechny \codename{ImportedEntity}, aby byl znám původ instance dané entity.
+
+Přikládám ER diagram (\improvement{pridat er diagram ref}). Jedná se pouze o schéma databáze, jak ho Doctrine namapovala.
+
+Nejde v něm vidět dědičnost u uživatelů, dědičnost je mapována strategií Class Table Inharitance\cite{P-of-EAA}.
+
+
+
 \improvement{Vložit schéma db: }
 
 
@@ -76,18 +93,19 @@ Nula ve sloupci týdně znamená, že daný učitel tento úvazek\unsure{co je u
     \label{fig:ukazka-sestavy-predmety}
     
 \end{figure}
-\begin{figure}[H]
-\begin{lstlisting}[language=HTML,caption={Zkrácené zdrojové HTML sestavy}]
+
+\begin{code}[H]
+  \begin{minted}[breaklines]{html}
 <div class="page" style="width:794;height:1123;"><a name="XFRXPAGE_1">
  ...
- <div class="font7" style="top:30px;left:129px;height:19px;width:230px;...">Ing. Bos Petr</div>
- <div class="font6" style="top:30px;left:4px;height:20px;width:128px;...">Úvazek učitele:</div>
- <div class="base" style="border-width:0px;border-top-width:2px;top:80px;left:-3px;height:1px;width:756px;border-style:solid;border-color:RGB(0,0,0);background-color:RGB(0,0,0);"></div>
+ <div class="font7" style="top:30px;left:129px;...">Ing. Bos Petr</div>
+ <div class="font6" style="top:30px;left:4px;...">Úvazek učitele:</div>
  <div class="font2" style="top:103px;left:8px;height:30px;width:745px;...">Balner Šimon,Blažek Matyáš,Dvorník Ondřej,Fryštacký Filip,Garel Dominik,Gořula David,Gruška Filip,Chudíček Tobiáš,Ilyenin</div>
  ...
 </div>
-\end{lstlisting}
-\end{figure}
+\end{minted}
+\caption{Zkrácené zdrojový kód HTML sestavy úvazky učitele}
+\end{code}
 
 
 \section{Import z XML}
@@ -101,22 +119,13 @@ Na import XML se používá PHP extension SimpleXML. Je to jednoduchý způsob p
 \definecolor{darkblue}{rgb}{0.0,0.0,0.6}
 \definecolor{cyan}{rgb}{0.0,0.6,0.6}
 
-
-\lstdefinelanguage{XML}
-{
-  morestring=[b]",
-  morestring=[s]{>}{<},
-  morecomment=[s]{<?}{?>},
-  stringstyle=\color{black},
-  identifierstyle=\color{darkblue},
-  keywordstyle=\color{cyan},
-  morekeywords={xmlns,version,type}% list your attributes here
-}
-\begin{lstlisting}[language=XML,basicstyle=\small,caption={Ukázka struktury XML}]
+\begin{code}[H]
+  \begin{minted}[fontsize=\small]{xml}
 <?xml version="1.0" encoding="utf-8"?>
 <BakalariImport>
     <SkolniRok>2022/23</SkolniRok>
-    <Predmety><Predmet><Zkratka>PRG</Zkratka><Nazev>Programování</Nazev></Predmet>
+    <Predmety><Predmet><Zkratka>PRG</Zkratka>
+    <Nazev>Programování</Nazev></Predmet>
     </Predmety>
     <Studenti>
         <Student>
@@ -150,7 +159,9 @@ Na import XML se používá PHP extension SimpleXML. Je to jednoduchý způsob p
         </Ucitel>       
     </Ucitele>
 </BakalariImport>
-\end{lstlisting}
+\end{minted}
+\caption{Ukázka struktury XML}
+\end{code}
 
 
 \section{Databáze a mapování importu}
@@ -175,17 +186,19 @@ Proto umožňujeme inkrementální import, importuje se jen to nové a staré im
 
 Entity spravované importem implementují interface \codename{ImportedEntity}.
 
-\begin{lstlisting}[language=php, caption={Zdrojový kód \codename{ImportedEntity}}]
+\begin{code}[H]
+\begin{minted}{php}
+  <?php
     interface ImportedEntity
     {
         public function getId(): mixed;
-    
         public function getImportHash(): ?string;   
-
         public function loadImportHash(): string;   
-        public function updateFromSelf(ImportedEntity \$old): static;
+        public function updateFromSelf(ImportedEntity $old): static;
     }
-\end{lstlisting}
+\end{minted}
+\caption{Zdrojový kód \codename{ImportedEntity}}
+\end{code}
 
 V Doctrine se dělají hromadné operace po $N$ operacích. $N$ se dá zvolit experimentem.
 Po každých $N$ operacích se pak zavolají metody \codename{EntityManager.flush()} a \codename{EntityManager.clear()}. Dělá se to po inkrementech, aby \codename{UnitOfWork} byl schopen udělat možné optimalizace a aby se zamezilo zbytečnému procházení grafu entit. Operace clear pak vyčistí graf, to je důležité aby nedošlo k úniku paměti.
@@ -204,12 +217,6 @@ Jedná se o import wizard, kdy konečný automat \vizref{uvod:konecny-automat} r
 Na obrázku \ref{postup:import-diagram} je diagram korků importu.
 \improvement{Diagram workflow}
 
-\begin{sidewaysfigure}
-	\centering
-  \includegraphics[width=1\linewidth]{Figures/import-diagram.png}
-  \caption{Diagram konečného automatu pro koky importu}
-  \label{postup:import-diagram}
-\end{sidewaysfigure}
 
 U definice tohoto konečného automatu je v metadatech stavu uložen presenter, který má za úkol zobrazení a zpracování daného stavu.
 Presenter je vlastně interface. Presentery jednotlivých kroků jsou buď přímo implementují interface nebo dědí z abstraktních tříd
@@ -224,6 +231,16 @@ Zpracování jednotlivých kroků může trvat dlouho, a proto používám na p�
 Celý krok je v HTML elementu \codename{turbo-frame\unsure{turbo element name ?}}, ten je při odeslání formu nahrazen novým framem\footnote{Není úplně nahrazen, ale je pomocí DOM morph knihovny upraven}. 
 
 
+\clearpage
+
+\begin{sidewaysfigure}
+	\centering
+  \includegraphics[width=1\linewidth]{Figures/import-diagram.png}
+  \caption{Diagram konečného automatu pro koky importu}
+  \label{postup:import-diagram}
+\end{sidewaysfigure}
+
+\clearpage
 
 \section{Generování emailů z uživatelských dat}
 

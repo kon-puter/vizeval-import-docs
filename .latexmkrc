@@ -1,2 +1,2 @@
 @default_files = ('main.tex');
-$pdflatex = 'pdflatex --shell-escape %O %S';
+$pdflatex = 'pdflatex -synctex=1 --shell-escape %O %S';
