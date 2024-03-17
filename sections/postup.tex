@@ -175,7 +175,7 @@ Proto umožňujeme inkrementální import, importuje se jen to nové a staré im
 
 Entity spravované importem implementují interface \codename{ImportedEntity}.
 
-\begin{lstlisting}[language=PHP, caption={Zdrojový kód \codename{ImportedEntity}}]
+\begin{lstlisting}[language=php, caption={Zdrojový kód \codename{ImportedEntity}}]
     interface ImportedEntity
     {
         public function getId(): mixed;
@@ -257,4 +257,16 @@ Vnější dotaz vybere importované osoby, které obsahují email z výsledku vn
 Ve vnitřním dotazu se vyberou emaily, které nejsou unikátní. V praxi jsem však dotazy musel rozdělit na dva.\unsure{potencial fix ?}
 
 Tento krok je realizován čistě pomocí Symfony Form. Celý formulář se skládá z pole \codename{CollectionType}\unsure{fact check pls} a \codename{SubmitType}.
-Jako typ kolekce je určen typ formuláře pro importované osoby. Takto nastavený Symfony Form jednoduše určí velikost výsledného formuláře na základě počtu prvků v poli. A při zpracování formuláře mi poskytne zvalidované pole importovaných osob.
+  Jako typ kolekce je určen typ formuláře pro importované osoby. Takto nastavený Symfony Form jednoduše určí velikost výsledného formuláře na základě počtu prvků v poli. A při zpracování formuláře mi poskytne zvalidované pole importovaných osob.
+
+\section{Zrušení importu}
+
+Během importování může nastat stav, který si uživatel přeje vrátit.
+To se může například stát když napíše špatný výraz na generování emailu.
+Tohle je řešeno pomocí možnosti zrušit import.
+Tato možnost je dostupná i po dokončení importu pro $N$ nejnovějších importů v daném roce.
+
+Pomocí entity \codename{ImportStatus} se uchovávají informace o importech, jak probíhajících, tak dokončených.
+Každá importovaná entita má atribut \codename{import} typu \codename{ImportStatus} \improvement{pridat ref}.
+A při rušení importu jsou instance entit z daného importu smazány z databáze.
+Jestliže se jedná o zrušení $N$ nejnovějších importů tak se před mazáním filtrují importy na základě školního roku, aby nedošlo ke smazání importů z jiného školního roku.
