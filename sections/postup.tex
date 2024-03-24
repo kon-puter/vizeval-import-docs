@@ -1,30 +1,42 @@
 \section{Průzkum požadavků škol}
 \change{rephrase}
-Tvorba začala zjištěním požadavků. Udělal jsem Google formulář, který primárně zjišťoval informace o školním systému. Pomocí vedení školy byl pak rozeslán na spřátelené střední školy. 
+Udělal jsem Google formulář, který primárně zjišťoval informace o školním systému.  Pomocí vedení školy byl pak rozeslán na spřátelené střední školy. 
 \subsection{Výsledky průzkumu informačních systémů středních škol}
-Na dotazník odpovědělo 13 škol z moravskoslezského kraje.
+Na dotazník odpovědělo 13 škol z Moravskoslezského kraje. Těší nás, že 12 škol projevilo zájem o vývoj Vizevalu.
 
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
-    \includegraphics[width=0.5\linewidth]{Figures/vyuziti_skolnich_systemu.PNG}
+    \includegraphics[width=1\linewidth]{Figures/vyuziti_skolnich_systemu.PNG}
     \caption{Využití školních informačních systémů}
     \label{fig:vyuziti-skolnich-systemu}
 \end{figure}
 
-Většina škol používá systém Bakaláři a na něj se bude zaměřovat import. Import bude možné udělat z tiskových sestav. Pro jiné školní systémy bude možno použít XML import, který je univerzální (podporuje i Bakaláře\footnote{Je však potřeba přístup k databázi Bakalářů a speciální program na vygenerování XML.}).
+Většina škol používá systém Bakaláři a na něj se bude zaměřovat import. Import bude možné udělat z tiskových sestav. Pro jiné školní systémy bude možno použít XML import, který je univerzální (podporuje i Bakaláře)
 
 
-\newpage
 
-\begin{figure}[t]
+
+XML import vyžaduje přístup k databázi Bakalářů a speciální program na vygenerování XML. Pravděpodobně bude použitelný pouze na školách, které mají nasazení Bakalářů na lokální síti. 
+
+
+
+\begin{figure}[H]
     \centering
-    \includegraphics[width=0.5\linewidth]{Figures/poskytovatele_emailu.PNG}
+    \includegraphics[width=1\linewidth]{Figures/nasazeni-bakalaru.png}
+    \caption{Poskytovatelé emailů}
+    \label{fig:poskytovatele-emailu}
+\end{figure}
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Figures/poskytovatele_emailu.PNG}
     \caption{Poskytovatelé emailů}
     \label{fig:poskytovatele-emailu}
 \end{figure}
 
 Všechny dotazované školy mají emaily od Microsoftu nebo Googlu.
-Přihlašování bude probíhat pomocí emailu. Uživatelé se budou moci přihlásit do portálu pomocí protokolu OAuth, který podporují oba provozovatelé. Výhodou tohoto způsobu přihlašování je, že naše aplikace neukládá hesla. Alternativně je možné ukládat heslo\footnote{Zahashované funkcí Bcrypt} do lokální databáze.
+Přihlašování bude probíhat pomocí emailu. Uživatelé se budou moci přihlásit do portálu pomocí protokolu OAuth 2, který podporují oba provozovatelé. Výhodou tohoto způsobu přihlašování je, že naše aplikace neukládá hesla. Alternativně je možné ukládat heslo\footnote{Zahashované funkcí Bcrypt} do lokální databáze.
 
 
 
@@ -52,9 +64,41 @@ Nejde v něm vidět dědičnost u uživatelů, dědičnost je mapována strategi
 
 
 \section{Způsoby importu}
-Při prvotním importu, kdy se načítají informace o studentech a úvazcích se rovnou vytváří entity. Entity se ale nepersistují hned a ukládají se do databáze až v ImportService.
+Při prvotním importu, kdy se načítají informace o studentech a úvazcích se rovnou vytváří entity. Entity se ale nepersistují hned a ukládají se do databáze až v \codename{InitialImportService}.
 
-Importy z XML a sestav splňují interface \codename{ImportDataProvider}. Ten se skládá z getterů vracejících managery. Managery jsou objekty, co se starají o správu daných entit. \codename{ImportService} potom příjme \codename{ImportDataProvider} a postará se o jeho uložení. \codename{ImportService} se dá doplnit o další postup ukládání typu \codename{ImportSaveStep}, další postup závisí na formátu ze kterého se importuje.
+Importy z XML a sestav implementují interface \codename{ImportDataProvider}. Ten se skládá z getterů vracejících managery. Managery jsou objekty, co se starají o správu daných entit. \codename{InitalImportService} potom příjme \codename{ImportDataProvider} a postará se o jeho uložení. 
+
+Různé zdroje dat mohou potřebovat rozdílné způsoby uložení. \codename{InitialImportService} přijímá kroky prvotního importu, které implementují \codename{InitialImportStepInterface}. Kroky se provádí sekvenčně.
+
+\begin{code}[H]
+
+  \begin{minted}[startinline]{php}
+/**
+ * @template T of ImportDataProviderInterface
+ */
+interface InitialImportStepInterface
+{
+    /**
+     * @param InitialImportState<T> $state
+     * @return void
+     */
+    public function action(InitialImportState $state): void;
+}
+   \end{minted}
+  \caption{Zdrojový kód \codename{InitialImportStepInterface}}
+
+\end{code}
+
+
+Presenter pro první krok (\codename{InitialImportPresenter}) potom najde v DI containeru form providery.
+\codename{InitialImportFormProvider} poskytuje a následně zpracovává import pro daný zdroj dat (\codename{ImportDataProvider}).
+Presenter potom vrátí pohled s dostupnými data providery.
+Když se nejedná o první import v daném školním roce je možné importovat jen pomocí předchozího zdroje dat.
+To je z důvodu, že poskytnutá data se mohou lehce lišit mezi zdroji - například tituly učitelů. 
+
+
+
+
 
 \section{Import z tiskových sestav systému Bakaláři}
 \improvement{proofread}
@@ -83,6 +127,7 @@ Nula ve sloupci týdně znamená, že daný učitel tento úvazek\unsure{co je u
     \includegraphics[width=1\linewidth]{Figures/skupiny-ukazka.png}
     \caption{Ukázka sestavy rozdělení studentů do tříd}
     \label{fig:ukazka-sestavy-tridy}
+\newpage
 
 \end{figure}
 \begin{figure}[H]
@@ -210,35 +255,54 @@ Potom vytvoří \codename{entityMap}, což je mapa import hashů na id.
 Pak se prochází instance entit, které byly právě naimportovány a pokud nejsou v \codename{entityMap} tak se uloží pomocí hromadné operace a staré \codename{ImportedEntity} se upraví pomocí metody \codename{updateFromSelf}\footnote{Tato operace nemusí být využita}.
 
 
-\section{O korcích importu}
+\section{Kroky importu}
 
 Kroky importu jsou nezávislé na zdroji importu. 
-Jedná se o import wizard, kdy konečný automat \vizref{uvod:konecny-automat} rozhoduje o dalším možném stavu. 
+Jedná se o wizard, uživatel musí splnit po sobě jdoucí kroky. To jaký krok bude další určuje konečný automat \vizref{uvod:konecny-automat}.
 Na obrázku \ref{postup:import-diagram} je diagram korků importu.
-\improvement{Diagram workflow}
+Pro správu konečného automatu ze Symfony Workflow slouží třída \codename{ImportStateMachine}.
+
+Místo konečného automatu by šla použít sekvence kroků pro daný zdroj dat. To by však znamenalo, že by první krok musel být speciální a typy kroků by musely být předurčeny. Díky konečného automatu, každý krok může rozhodnout o dalším kroku a přechody mezi kroky jsou validovány.
+
+U definice tohoto konečného automatu je v metadatech stavu uložen presenter, který má za úkol zobrazení a zpracování daného stavu. 
+
+\begin{code}
+  \begin{minted}[startinline]{php}
+interface PresenterInterface
+{
+    public function getView(): View;
+    public function process(Request $request): void;
+    public function handleSkipRequest(): void;
+}
+ 
+    \end{minted}
+    \caption{Zdrojový kód \codename{PresenterInterface}}
+
+\end{code}
 
 
-U definice tohoto konečného automatu je v metadatech stavu uložen presenter, který má za úkol zobrazení a zpracování daného stavu.
-Presenter je vlastně interface. Presentery jednotlivých kroků jsou buď přímo implementují interface nebo dědí z abstraktních tříd
-pro jednotlivé použité frontendové technologie (\codename{LiveComponentPresenter}, \codename{FormPresenter}\unsure{fact check names}).
+Presentery jednotlivých kroků jsou buď přímo implementují interface nebo dědí z abstraktních tříd
+pro jednotlivé použité frontendové technologie (\codename{LiveComponentPresenter}, \codename{FormPresenter}).
 
 Tím, že presenter vrací pohled je možné, aby krok importu vypadal jakkoliv.
 K importu bylo využito hodně knihoven ze Symfony UX.
-Používám Symfony Form na formulář pro zadání souborů a generování emailu.
+Je použit Symfony Form na většinu formulářů v importu.
 Na spojování skupin používám LiveComponent, takže celý import obsahuje jen minimum JavaScriptu.
 
 Zpracování jednotlivých kroků může trvat dlouho, a proto používám na přechody mezi kroky Hotwire Turbo \vizref{ux-turbo}.
-Celý krok je v HTML elementu \codename{turbo-frame\unsure{turbo element name ?}}, ten je při odeslání formu nahrazen novým framem\footnote{Není úplně nahrazen, ale je pomocí DOM morph knihovny upraven}. 
+Kolečko znázorňující načítaní se ukazuje když je má na sobě element \codename{turbo-frame} stav \codename{busy}, to nastává když turbo čeká na odpověď od serveru.
+Celý krok je v HTML elementu \codename{turbo-frame}, ten je při odeslání formu nahrazen novým framem\footnote{Není úplně nahrazen, ale je pomocí DOM morph knihovny upraven}.
 
 
 \clearpage
 
-\begin{sidewaysfigure}
+\begin{figure}
 	\centering
-  \includegraphics[width=1\linewidth]{Figures/import-diagram.png}
+\resizebox{!}{0.95\textheight}{\huge{\input{sections/graph.tex}}}
   \caption{Diagram konečného automatu pro koky importu}
   \label{postup:import-diagram}
-\end{sidewaysfigure}
+\end{figure}
+
 
 \clearpage
 
@@ -251,7 +315,7 @@ Emaily se generují pomocí speciálních výrazů.
 Výrazy jsem vymýšlel tak, aby byly pro uživatele co nejjednodušší.
 Skládají se z řetězcových proměnných a konstant, hodnoty proměnných a konstant se potom spojí do jednoho výsledného řetězce, který je potom validován zda se jedná o email. V případě, že řetězec není validní email nastaví se u daného uživatele tag vyžaduje úpravu. 
 
-Proměnné jsou ve výrazu ohraničeny \textit{()}. Závorky můžou být validní v emailu pokud je lokální část emailu ohraničena uvozovkami\cite{wiki-email-address}. To by však neměl být problém, jelikož RFC5321 specifikuje, že emailové schránky, které se využívají k posílání emailů by neměly mít lokální část ohraničenou uvozovkami\cite{rfc5321}.
+Proměnné jsou ve výrazu ohraničeny \textit{()}. Závorky můžou být validní v emailu pokud je lokální část emailu ohraničena uvozovkami\cite{wiki-email-address}. To by však neměl být problém, jelikož RFC5321 specifikuje, že emailové schránky, které se využívají k přijímaní \unsure{goofy obrat} emailů by neměly mít lokální část ohraničenou uvozovkami\cite{rfc5321}.
 
 Proměnná se dá vložit celá \textit{(jmeno)}, znak \textit{(jmeno[1])} nebo rozsah znaků \textit{(jmeno[1:3])}.
 Ukázkový výraz pro studenty naší školy by tedy mohl vypadat takto \textit{(jmeno[1]).(prijmeni).st@spseiostrava.cz}.
@@ -307,7 +371,7 @@ Z takového výčtu nelze poznat jak jsou skupiny spojeny.
 Proto jsem vytvořil tento krok. 
 Seskupování funguje následovně.
 První si administrátor zvolí kombinaci \textit{třídy-předmět-učitel}, které přiřadí skupiny. 
-Když se jedná o úvazek, který je učen zvlášť zvolí možnost duplikace kombinace \textit{třídy-předmět-učitel}. Administrátor toto opakuje dokud nepřiřadí všechny skupiny.
+Když se jedná o úvazek, který je učen zvlášť přidá další kombinaci \textit{třídy-předmět-učitel}. Administrátor toto opakuje dokud nepřiřadí všechny skupiny.
 
 \section{Zrušení importu}
 
@@ -321,3 +385,38 @@ Každá importovaná entita má atribut \codename{import} typu \codename{ImportS
 A při rušení importu jsou instance entit z daného importu smazány z databáze.
 Jestliže se jedná o zrušení $N$ nejnovějších importů tak se před mazáním filtrují importy na základě školního roku, aby nedošlo ke smazání importů z jiného školního roku.
 
+
+\begin{code}[H]
+
+  \begin{minted}[startinline]{php}
+    const DELETE_ORDER = [
+        MultiClassedGroup::class,
+        EvaluationUnit::class,
+        GroupStudent::class,
+        ImportedPerson::class,
+        Group::class,
+        SchoolClass::class,
+        Subject::class,
+        SchoolYear::class
+    ];
+
+    /**
+     * @param ImportStatus $importStatus
+     * @return void
+     * @throws ForeignKeyConstraintViolationException
+     */
+    public function deleteImport(ImportStatus $importStatus): void
+    {
+        foreach (self::DELETE_ORDER as $entityType) {
+            $this->deleteRelatedEntities($entityType, $importStatus)
+                ->where('c.import = :import')
+                ->getQuery()
+                ->execute();
+        }
+        $this->em->remove($importStatus);
+    }
+  \end{minted}
+  
+  \caption{Ukázka zrušení aktuálního importu}
+
+\end{code}

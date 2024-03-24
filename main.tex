@@ -40,10 +40,10 @@ sortlocale=cs-CZ %sorts according to czech alphabet
 
 
 
-\newcommandx{\unsure}[2][1=]{\todo[disable, linecolor=red,backgroundcolor=red!25,bordercolor=red,#1]{#2}}
-\newcommandx{\change}[2][1=]{\todo[disable, linecolor=blue,backgroundcolor=blue!25,bordercolor=blue,#1]{#2}}
-\newcommandx{\info}[2][1=]{\todo[disable, linecolor=OliveGreen,backgroundcolor=OliveGreen!25,bordercolor=OliveGreen,#1]{#2}}
-\newcommandx{\improvement}[2][1=]{\todo[disable, linecolor=Plum,backgroundcolor=Plum!25,bordercolor=Plum,#1]{#2}}
+\newcommandx{\unsure}[2][1=]{\todo[linecolor=red,backgroundcolor=red!25,bordercolor=red,#1]{#2}}
+\newcommandx{\change}[2][1=]{\todo[linecolor=blue,backgroundcolor=blue!25,bordercolor=blue,#1]{#2}}
+\newcommandx{\info}[2][1=]{\todo[linecolor=OliveGreen,backgroundcolor=OliveGreen!25,bordercolor=OliveGreen,#1]{#2}}
+\newcommandx{\improvement}[2][1=]{\todo[linecolor=Plum,backgroundcolor=Plum!25,bordercolor=Plum,#1]{#2}}
 \newcommandx{\thiswillnotshow}[2][1=]{\todo[disable,#1]{#2}}
 
 
@@ -125,10 +125,10 @@ Tento dokument popisuje evaluační nástroj, který vynikl jako týmová dlouho
 \subfile{sections/uvod/motivace.tex}
 \subfile{sections/uvod/cile.tex}
 \subfile{sections/uvod/podobne-projekty.tex}
-\subfile{sections/uvod/pouzite-technologie.tex}
 
 
 \chapter{Postup vytvoření}
+\subfile{sections/uvod/pouzite-technologie.tex}
 \subfile{sections/postup}
 
 
@@ -136,8 +136,7 @@ Tento dokument popisuje evaluační nástroj, který vynikl jako týmová dlouho
 % formou přílohy ?
 
 \chapter{Závěr}
-  budoucnost aplikace, zlepšení, co bych udělal jinak, 
-
+\subfile{sections/zaver.tex}
 \printbibliography[title={Literatura}]
 
 % \newpage
