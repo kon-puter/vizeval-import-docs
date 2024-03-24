@@ -40,10 +40,10 @@ sortlocale=cs-CZ %sorts according to czech alphabet
 
 
 
-\newcommandx{\unsure}[2][1=]{\todo[ linecolor=red,backgroundcolor=red!25,bordercolor=red,#1]{#2}}
-\newcommandx{\change}[2][1=]{\todo[ linecolor=blue,backgroundcolor=blue!25,bordercolor=blue,#1]{#2}}
-\newcommandx{\info}[2][1=]{\todo[ linecolor=OliveGreen,backgroundcolor=OliveGreen!25,bordercolor=OliveGreen,#1]{#2}}
-\newcommandx{\improvement}[2][1=]{\todo[ linecolor=Plum,backgroundcolor=Plum!25,bordercolor=Plum,#1]{#2}}
+\newcommandx{\unsure}[2][1=]{\todo[disable, linecolor=red,backgroundcolor=red!25,bordercolor=red,#1]{#2}}
+\newcommandx{\change}[2][1=]{\todo[disable, linecolor=blue,backgroundcolor=blue!25,bordercolor=blue,#1]{#2}}
+\newcommandx{\info}[2][1=]{\todo[disable, linecolor=OliveGreen,backgroundcolor=OliveGreen!25,bordercolor=OliveGreen,#1]{#2}}
+\newcommandx{\improvement}[2][1=]{\todo[disable, linecolor=Plum,backgroundcolor=Plum!25,bordercolor=Plum,#1]{#2}}
 \newcommandx{\thiswillnotshow}[2][1=]{\todo[disable,#1]{#2}}
 
 
@@ -104,9 +104,9 @@ sortlocale=cs-CZ %sorts according to czech alphabet
 
 \CzechAbstract{
 \improvement{improve abstract to catch readers attention}
-Tento dokument popisuje evaluační nástroj, který vynikl jako týmová dlouhodobá maturitní práce. Tento nástroj je realizován formou webové aplikace a zabývá se vzájemným hodnocením studentů a učitelů. Je koncipován pro prostředí střední školy.
+Tento dokument popisuje evaluační nástroj, který vynikl jako týmová dlouhodobá maturitní práce. Tento nástroj je realizován formou webové aplikace a zabývá se vzájemným hodnocením studentů a učitelů. Dosahuje toho pomocí anket směřovaných na učitele a žáky. Jeho primární účel je poskytnutí zpětné vazby pedagogům a vedení školy. Je koncipován pro prostředí středních škol.
 }
-\CzechKeywords{Evaluační nástroj; Škola; Webová aplikace; Symfony; Import; PHP}
+\CzechKeywords{Evaluační nástroj; Autoevaluace; Škola; Webová aplikace; Symfony; Import; PHP }
 \EnglishAbstract{
 }
 
@@ -132,15 +132,15 @@ Tento dokument popisuje evaluační nástroj, který vynikl jako týmová dlouho
 \subfile{sections/postup}
 
 
-\chapter{Uživatelský manuál}
-formou přílohy ?
+% \chapter{Uživatelský manuál}
+% formou přílohy ?
 
 \chapter{Závěr}
   budoucnost aplikace, zlepšení, co bych udělal jinak, 
 
 \printbibliography[title={Literatura}]
 
-\newpage
-\listoftodos[TODOS]
+% \newpage
+% \listoftodos[TODOS]
 
 \end{document}
