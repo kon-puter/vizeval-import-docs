@@ -1,16 +1,38 @@
 \section{Použité technologie}
-\improvement{pořád se opakuje používáme, první osoba na popis postupu 💀}
+\improvement{pořád se opakuje používáme, první osoba na popis postupu }
 
-Používáme framework \href{https://symfony.com/}{Symfony}. Symfony je open-source PHP framework, který je vydán pod MIT licencí.  Využívá návrhový vzor MVC a moderní PHP. Symfony je modulární a jednoduše rozšiřitelný pomocí existujících bundlů/componentů. To je jeden z hlavních důvodů, proč byl tento framework vybrán. Již spoustu problémů řeší za nás a zamezuje tím bezpečnostním a jiným chybám.
-Za zmíňku stojí Symfony EasyAdmin, který dokáže vytvořit pro danou entitu CRUD stránku, která je jednoduše upravitelná.
+Používáme framework \href{https://symfony.com/}{Symfony}.
+Symfony je open-source PHP framework, který je vydán pod MIT licencí.
+Využívá návrhový vzor MVC a moderní PHP.
+Symfony je modulární a jednoduše rozšiřitelný pomocí existujících bundlů/componentů\footnote, klade důraz na možnost konfigurace a standardizaci.
+To je jeden z hlavních důvodů, proč byl tento framework vybrán.
+Používá ho přes 600000 vývojářů a má 713M stažení měsíčně.\cite{symfony:what-is}
+Již spoustu problémů řeší za nás a zamezuje tím bezpečnostním a jiným chybám.
+
 
 \subsection{Databáze}
-Používáme Symfony společně s Doctrine ORM, to nám poskytuje řadu výhod jako typesafe mapování, nezávislost na databázi\footnote{Doctrine ORM aktuálně podporuje PostgreSQL, MySQL, Oracle, SQL server a další\cite{doctrine-supported-dbs}}. S Doctrine používáme přístup code first, napíšeme standardní PHP třídu, kde pomocí atributů přidáme vlastnostem informace o jejich mapování. 
-\unsure{Pridat example}
-Pro uchovávání dat používáme relační databázi PostgreSQL, ta podporuje  pokročilejší funkce jako transakce DDL narozdíl od MySQL.  
+Jako persistance vrstvu používáme Doctrine ORM, to nám poskytuje řadu výhod jako typesafe mapování, nezávislost na databázi\footnote{Doctrine ORM aktuálně podporuje PostgreSQL, MySQL, Oracle, SQL server a další\cite{doctrine-supported-dbs}}.
+S Doctrine používáme přístup code first, napíšeme standardní PHP třídu, kde pomocí atributů přidáme vlastnostem informace o jejich mapování. 
+
+Pro uchovávání dat používáme relační databázi PostgreSQL, ta podporuje pokročilejší funkce jako transakce DDL narozdíl od MySQL.  
+
+
+\section{Symfony EasyAdmin}
+
+Jedná se o bundle, který je určen k vytváření administrací.
+Vstupním bodem takové administrace je Dashboard, který obsahuje další stránky, těmi můžou být CRUD stránky EasyAdminu nebo vlastní stránka.
+
+Síla EasyAdminu spočívá v integraci společně s Doctrine.
+Dokáže vytvořit pro danou entitu CRUD stránku, která je jednoduše upravitelná a přizpůsobitelná.
+EasyAdmin poskytuje důležité prvky jako stránkování a filtry.
+Poskytuje možnost doplnění o nové akce. Akce nějakým způsobem upravují entitu/entity.
+
+EasyAdmin umožňuje změnit vzhled přepsáním výchozích templatů.
+
 
 \subsection{Serverové technologie}
-Jako web server používáme FrankenPHP, moderní php server založený na serveru Caddy. FrankenPHP podporuje worker mode, který umožňuje znovu použití PHP interpretoru při dalším requestu.
+Jako web server používáme FrankenPHP, moderní php server založený na serveru Caddy.
+FrankenPHP podporuje worker mode, který umožňuje znovu použití PHP interpretoru při dalším requestu.
 
 Naše aplikace je nasazována pomocí dockeru. Pro každou školu máme zvlášť container s databázovým a webovým serverem.
 Jako reverse proxy používáme Traefic, který nám umožňuje jednoduchou správu instancí.

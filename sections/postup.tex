@@ -6,7 +6,9 @@ Na dotazník odpovědělo 13 škol z Moravskoslezského kraje. Těší nás, že
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\linewidth]{Figures/vyuziti_skolnich_systemu.PNG}
+    \begin{tikzpicture}
+      \pie[color={graph1!100,graph2!100,graph3!100,graph4!100}]{61.5/Bakaláři, 7.7/EduPage, 30.8/Škola OnLine}
+    \end{tikzpicture}
     \caption{Využití školních informačních systémů}
     \label{fig:vyuziti-skolnich-systemu}
 \end{figure}
@@ -18,25 +20,21 @@ Většina škol používá systém Bakaláři a na něj se bude zaměřovat impo
 
 XML import vyžaduje přístup k databázi Bakalářů a speciální program na vygenerování XML. Pravděpodobně bude použitelný pouze na školách, které mají nasazení Bakalářů na lokální síti. 
 
-
-
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\linewidth]{Figures/nasazeni-bakalaru.png}
-    \caption{Poskytovatelé emailů}
-    \label{fig:poskytovatele-emailu}
-\end{figure}
 
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=1\linewidth]{Figures/poskytovatele_emailu.PNG}
-    \caption{Poskytovatelé emailů}
+    \begin{tikzpicture}
+      \pie[color={graph1!100,graph2!100,graph3!100,graph4!100}]{75.0/Provoz ve školní síti, 12.5/Plné cloudové řešení, 12.5/Kombinované řešení}
+    \end{tikzpicture}
+    \caption{Způsoby nasazení Bakalářů}
     \label{fig:poskytovatele-emailu}
 \end{figure}
 
 Všechny dotazované školy mají emaily od Microsoftu nebo Googlu.
-Přihlašování bude probíhat pomocí emailu. Uživatelé se budou moci přihlásit do portálu pomocí protokolu OAuth 2, který podporují oba provozovatelé. Výhodou tohoto způsobu přihlašování je, že naše aplikace neukládá hesla. Alternativně je možné ukládat heslo\footnote{Zahashované funkcí Bcrypt} do lokální databáze.
+Přihlašování bude probíhat pomocí emailu.
+Uživatelé se budou moci přihlásit do portálu pomocí protokolu OAuth 2, který podporují oba provozovatelé emailů.
+Výhodou tohoto způsobu přihlašování je, že naše aplikace neukládá hesla.
+Alternativně je možné ukládat heslo\footnote{Zahashované funkcí Bcrypt} do lokální databáze.
 
 
 
