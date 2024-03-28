@@ -78,7 +78,7 @@
 \newcounter{Dipl@CurrentThesisLanguage}
 \setcounter{Dipl@CurrentThesisLanguage}{\Dipl@CzechLanguage}
 \LoadClass[11pt,openany]{book}
-\RequirePackage[T1]{fontenc}
+% \RequirePackage[T1]{fontenc}
 \RequirePackage{lmodern}
 \RequirePackage{geometry}
 \RequirePackage{booktabs}
