@@ -62,7 +62,8 @@ sortlocale=cs-CZ %sorts according to czech alphabet
 
 
 
-
+% needs LuaTex
+\babelprovide[transforms = oneletter.nobreak]{czech} 
 
 
 
@@ -108,7 +109,12 @@ sortlocale=cs-CZ %sorts according to czech alphabet
 
 \CzechAbstract{
 \improvement{improve abstract to catch readers attention}
-Tento dokument popisuje evaluační nástroj, který vynikl jako týmová dlouhodobá maturitní práce. Tento nástroj je realizován formou webové aplikace a zabývá se vzájemným hodnocením studentů a učitelů. Dosahuje toho pomocí anket směřovaných na učitele a žáky. Jeho primární účel je poskytnutí zpětné vazby pedagogům a vedení školy. Je koncipován pro prostředí středních škol.
+Tato práce se zabývá import částí evaluačního nástroje, který vynikl jako týmová dlouhodobá maturitní práce.
+Cílem bylo udělat efektivní nástroj pro hodnocení kvality výkuky a poskytnutí přehledných informací vedení školy a učitelům.
+Dosahuje toho pomocí anket kde respondenti hodnotí daný úvazek.
+Tento nástroj je realizován formou webové aplikace využívající moderní PHP.
+Jeho primární účel je poskytnutí zpětné vazby pedagogům a vedení školy.
+Je koncipován pro prostředí středních škol.
 }
 \CzechKeywords{Evaluační nástroj; Autoevaluace; Škola; Webová aplikace; Symfony; Import; PHP }
 \EnglishAbstract{

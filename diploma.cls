@@ -70,9 +70,9 @@
 \newtoks\Dipl@SubmissionYearCaption
 \newtoks\Dipl@FacultyLogoFileName
 \newtoks\Dipl@CzechAbstractCaption
-\Dipl@CzechAbstractCaption={Abstrakt}
+\Dipl@CzechAbstractCaption={Anotace}
 \newtoks\Dipl@EnglishAbstractCaption
-\Dipl@EnglishAbstractCaption={Abstract}
+\Dipl@EnglishAbstractCaption={Annotation}
 \newcounter{Dipl@CurrentThesisType}
 \setcounter{Dipl@CurrentThesisType}{\Dipl@MaturitaThesis}
 \newcounter{Dipl@CurrentThesisLanguage}
