@@ -1,6 +1,6 @@
-\section{Průzkum požadavků škol}
+\section{Upřesnění požadavků škol}
 \change{rephrase}
-Udělal jsem Google formulář, který primárně zjišťoval informace o školním systému. Pomocí vedení školy byl pak rozeslán na spřátelené střední školy. 
+Byl vytvořen Google formulář, který primárně zjišťoval informace o školním systému. Pomocí vedení školy byl pak rozeslán na spřátelené střední školy. 
 \subsection{Výsledky průzkumu informačních systémů středních škol}
 Na dotazník odpovědělo 13 škol z Moravskoslezského kraje. Těší nás, že 12 škol projevilo zájem o vývoj Vizevalu.
 
@@ -68,7 +68,107 @@ Nejde v něm vidět dědičnost u uživatelů, která je mapována strategií Cl
 \end{sidewaysfigure}
 
 
-\section{Způsoby importu}
+
+\section{Databáze a mapování importu}
+
+Importy závisí na školní rok. Když vytvoříte školní rok nemáte žádná data. Každé hodnocení probíhá od začátku školního roku až po moment nejnovějšího importu.
+
+Ukládání importu do databáze probíhá pomocí ORM. Máme vytvořené třídy a Doctrine už je mapuje na tabulky v relační databázi. Doctrine dokáže mapovat celou řadu OOP konceptů jako dědičnost a kompozici.
+
+Uživatele máme řešené dědičností tak, že třídy \codename{Student} a \codename{Teacher} dědí z abstraktní třídy \codename{ImportedPerson} a ta dědí ze třídy \codename{User}. Takto uspořádaná hierarchie tříd má řadu výhod jako možnost dotazovat všechny importované osoby najednou.   Toto se používá v řešení duplikátu emailu (\ref{postup:deduplikace-emailu}).\improvement{toto se využívá v ... ref} Nevýhoda takovéhoto mapování je zvýšená komplexita pro ORM a potencionální degradace výkonu z databázové strany.
+
+Doctrine je ORM se silnou abstrakcí, což značně komplikuje samotné ukládání. Není totiž podporovaná operace \textsc{upsert} (v databázi PostgreSQL realizovanou pomocí jednoho dotazu \textsc{insert into ... on conflict do update}). Je sice možné užít nativní SQL, ale tím bychom přišli o výhody ORM.
+Nevýhodou je pomalejší ukládání, to se děje kvůli tomu, že Doctrine se snaží vytvořit graf daných entit, Doctrine interně používá identity map na entity takže je vyšší spotřeba RAM.
+
+
+
+\section{Inkrementální import}
+
+Zdroje importů nemusí poskytovat data o celém školním roce, v případě importu ze sestav se jedná o úvazky, kde se střídají skupiny u učitele (na naší škole např. mechatronika).
+ Nebo se během školního roku něco nečekaně změní.
+
+Proto umožňujeme inkrementální import, importuje se jen to nové a staré importy nechává nedotčené. Doporučuji dělat import před každým testovacím obdobím. Data ze starých importů není třeba odstraňovat (i staré úvazky, které už nemusí být platné lze hodnotit). 
+
+Entity spravované importem implementují interface \codename{ImportedEntity}.
+
+\begin{code}[H]
+\begin{minted}{php}
+  <?php
+    interface ImportedEntity
+    {
+        public function getId(): mixed;
+        public function getImportHash(): ?string;   
+        public function loadImportHash(): string;   
+        public function updateFromSelf(ImportedEntity $old): static;
+    }
+\end{minted}
+\caption{Zdrojový kód \codename{ImportedEntity}}
+\end{code}
+
+V Doctrine se dělají hromadné operace po $N$ operacích. $N$ se dá zvolit experimentem.
+Po každých $N$ operacích se pak zavolají metody \codename{EntityManager.flush()} a \codename{EntityManager.clear()}. Dělá se to po inkrementech, aby \codename{UnitOfWork} byl schopen udělat možné optimalizace a aby se zamezilo zbytečnému procházení grafu entit. Operace clear pak vyčistí graf, to je důležité aby nedošlo k úniku paměti.
+
+\codename{ImportedEntity} má metody loadImportHash ta se používá ke vytvoření import hashe. Import hash se skládá z atributů, které unikátně identifikují danou entitu. Pro import nelze spoléhat na dané atributy, protože uživatel je může prostřednictvím administrace upravit. To by znamenalo, že při dalším importu bude stejná instance entity znovu vytvořena\footnote{Kdyby chtěl uživatel, aby byla při dalším importu vytvořena nová instance entity, může vymazat hodnotu import hashe.}.
+Import hash je využíván třídou \codename{ImportedEntityUpsertProcessor}. Ten se stará o upsert importovaných entit.
+\codename{ImportedEntityUpsertProcessor} načte při upsertu všechny instance ukládané entity.
+Potom vytvoří \codename{entityMap}, což je mapa import hashů na id.
+Pak se prochází instance entit, které byly právě naimportovány a pokud nejsou v \codename{entityMap} tak se uloží pomocí hromadné operace a staré \codename{ImportedEntity} se upraví pomocí metody \codename{updateFromSelf}\footnote{Tato operace nemusí být využita}.
+
+
+\section{Kroky importu}
+
+Kroky importu jsou pokud možno nezávislé na zdroji importu. 
+Jedná se o wizard, uživatel musí splnit po sobě jdoucí kroky. To jaký krok bude další určuje konečný automat \vizref{uvod:konecny-automat}.
+Na obrázku \ref{postup:import-diagram} je diagram korků importu.
+Pro správu konečného automatu ze Symfony Workflow slouží třída \codename{ImportStateMachine}.
+
+Místo konečného automatu by šla použít sekvence kroků pro daný zdroj dat. To by však znamenalo, že by první krok musel být speciální a typy kroků by musely být předurčeny. Díky konečného automatu, každý krok může rozhodnout o dalším kroku a přechody mezi kroky jsou validovány.
+
+U definice tohoto konečného automatu je v metadatech stavu uložen presenter, který má za úkol zobrazení a zpracování daného stavu. 
+
+\begin{code}
+  \begin{minted}[startinline]{php}
+interface PresenterInterface
+{
+    public function getView(): View;
+    public function process(Request $request): void;
+    public function handleSkipRequest(): void;
+}
+ 
+    \end{minted}
+    \caption{Zdrojový kód \codename{PresenterInterface}}
+
+\end{code}
+
+
+Presentery jednotlivých kroků jsou buď přímo implementují interface nebo dědí z abstraktních tříd
+pro jednotlivé použité frontendové technologie (\codename{LiveComponentPresenter}, \codename{FormPresenter}).
+
+Tím, že presenter vrací pohled je možné, aby krok importu vypadal jakkoliv.
+K importu bylo využito hodně knihoven ze Symfony UX.
+Je použit Symfony Form na většinu formulářů v importu.
+Na spojování skupin používám LiveComponent, takže celý import obsahuje jen minimum JavaScriptu.
+
+Zpracování jednotlivých kroků může trvat dlouho, a proto používám na přechody mezi kroky Hotwire Turbo \vizref{ux-turbo}.
+Kolečko znázorňující načítaní se ukazuje když je má na sobě element \codename{turbo-frame} stav \codename{busy}, to nastává když turbo čeká na odpověď od serveru.
+Celý krok je v HTML elementu \codename{turbo-frame}, ten je při odeslání formu nahrazen novým framem\footnote{Není úplně nahrazen, ale je pomocí DOM morph knihovny upraven}.
+
+
+\clearpage
+
+\begin{figure}
+	\centering
+\resizebox{!}{0.95\textheight}{\huge{\input{sections/graph.tex}}}
+  \caption{Diagram konečného automatu pro koky importu}
+  \label{postup:import-diagram}
+\end{figure}
+
+
+\clearpage
+
+
+
+\subsection{Import ze školního systému}
 Při prvotním importu, kdy se načítají informace o studentech a úvazcích se rovnou vytváří entity. Entity se ale nepersistují hned a ukládají se do databáze až v \codename{InitialImportService}.
 
 Importy z XML a sestav implementují interface \codename{ImportDataProvider}. Ten se skládá z getterů vracejících managery. Managery jsou objekty, co se starají o správu daných entit. \codename{InitalImportService} potom příjme \codename{ImportDataProvider} a postará se o jeho uložení. 
@@ -99,27 +199,39 @@ Presenter pro první krok (\codename{InitialImportPresenter}) potom najde v DI c
 \codename{InitialImportFormProvider} poskytuje a následně zpracovává import pro daný zdroj dat (\codename{ImportDataProvider}).
 Presenter potom vrátí pohled s dostupnými data providery.
 Když se nejedná o první import v daném školním roce je možné importovat jen pomocí předchozího zdroje dat.
-To je z důvodu, že poskytnutá data se mohou lehce lišit mezi zdroji - například tituly učitelů. 
+To je z důvodu, že poskytnutá data se mohou lehce lišit mezi zdroji -- například tituly učitelů. 
 
 
 
 
 
-\section{Import z tiskových sestav systému Bakaláři}
+\subsubsection{Import z tiskových sestav systému Bakaláři}
 \improvement{proofread}
 Tento typ importu slouží pro školy, které nemají přístup k databázi Bakalářů. 
-Jedná se primárně o školy, které využívají cloud verzi Bakalářů. Využívají se tři sestavy, které jsou již předvytvořené\unsure{Doufám, že nejsou custom}. Bakaláři používají XFRX\footnote{Knihovna, která převádí Visual FoxPro reporty na elektronické sestavy různých formátů} ke generování samotných sestav. Tyto sestavy nejsou určeny ke zpětnému programatickému čtení dat.
+Jedná se primárně o školy, které využívají cloud verzi Bakalářů.
+Využívají se tři sestavy, které jsou již předvytvořené\unsure{Doufám, že nejsou custom}.
+Bakaláři používají XFRX\footnote{Knihovna, která převádí Visual FoxPro reporty na elektronické sestavy různých formátů} ke generování samotných sestav.
+Tyto sestavy nejsou určeny ke zpětnému čtení dat programem.
 
-Dostupné formáty sestav jsou TXT, CSV, XLS a HTML. U sestav formátu TXT chybí mezery jako separátor u sloupců, sestava předmětů ve formátu CSV by byla možná importovat, ale ostatní sestavy by nešly jednoduše zpracovat kvůli zdánlivě náhodnému počtu separátorů, podobný problém nastává i u XLS tam se však ještě vyskytuje problém se sloučenými poli.
+Dostupné formáty sestav jsou TXT, CSV, XLS a HTML.
+U sestav formátu TXT chybí mezery jako separátor u sloupců, sestava předmětů ve formátu CSV by byla možná importovat, ale ostatní sestavy by nešly jednoduše zpracovat kvůli zdánlivě náhodnému počtu separátorů, podobný problém nastává i u XLS tam se však ještě vyskytuje problém se sloučenými poli.
 
-Zvolil jsem, že budu importovat HTML sestavy. Celá tabulka je postavená na základě absolutního pozicování. Při parsování sestav seřadím jednotlivé divy podle absolutního pozicování. Tímto způsobem převádím každý řádek v tabulce na objekt.
+Zvolil jsem, že budu importovat HTML sestavy.
+Celá tabulka je postavená na základě absolutního pozicování.
+Při parsování sestav seřadím jednotlivé div elementy podle absolutního pozicování.
+Tímto způsobem převádím každý řádek v tabulce na objekt.
 
-Sestava úvazků však obsahuje řadu chyb. Když učitel zárověň učí více tříd najednou, objeví se ve sloupci třídy nevalidní zkratky tříd. Toto řeším vyhledáním třídy a skupiny v sestavě tříd na základě členů skupiny. 
+Sestava úvazků však obsahuje řadu chyb.
+Když učitel zárověň učí více tříd najednou, objeví se ve sloupci třídy nevalidní zkratky tříd. 
+Toto řeším vyhledáním třídy a skupiny v sestavě tříd na základě členů skupiny. 
 Zkratky předmětu jsou správné, až na případ když se daný předmět dělí na teorii a cvičení,
-kvůli tohoto je potřeba najít v sestavě předmětů správnou zkratku. Někdy se stane, že název předmětu není úplný a potom se vezme zkratka ze sestavy předmětů.
+kvůli tohoto je potřeba najít v sestavě předmětů správnou zkratku.
+Někdy se stane, že název předmětu není úplný a potom se vezme zkratka ze sestavy předmětů.
+
 
 Nula ve sloupci týdně znamená, že daný učitel tento úvazek\unsure{co je uvazek} aktuálně neučí, to muže nastat při rotaci skupin nebo u teorií daného předmětu, které učitel neučí\improvement{rephrase}. 
 
+Import ze sestav celkově nemusí být spolehlivý kvůli možným změnám formátování či dalším chybám v sestavách.
 \begin{figure}[h]
     \centering
     \includegraphics[width=1\linewidth]{Figures/uvazky-ucitelu-ukazka.png}
@@ -158,7 +270,7 @@ Nula ve sloupci týdně znamená, že daný učitel tento úvazek\unsure{co je u
 \end{code}
 
 
-\section{Import z XML}
+\subsubsection{Import z XML}
 Import z XML je nezávislý na školním systému. Je však potřeba mít externí program, který XML vytvoří dle daného RelaxNG schématu (schéma je v souboru \codename{Bakalari.rng}). Struktura je použitá z předchozí verze (více v \ref{uvod:predchozi-verze}), kořenový prvek se jmenuje \codename{BakalariImport} z historických důvodu. Emaily jsou v dobrovolné a pokud budou u některých studentů/učitelů chybět vygenerují se v dalším kroku importu.
 
 Na import XML se používá PHP extension SimpleXML. Je to jednoduchý způsob parsování. Jediná nevýhoda je, že SimpleXML načte celý soubor XML do paměti. XML soubory škol jsou však malé a i kdyby měla škola počet žáků v řádech tisíců, SimpleXML by dostačovalo. 
@@ -214,104 +326,9 @@ Na import XML se používá PHP extension SimpleXML. Je to jednoduchý způsob p
 \end{code}
 
 
-\section{Databáze a mapování importu}
-
-Importy závisí na školní rok. Když vytvoříte školní rok nemáte žádná data. Každé hodnocení probíhá od začátku školního roku až po moment nejnovějšího importu.
-
-Ukládání importu do databáze probíhá pomocí ORM. Máme vytvořené třídy a Doctrine už je mapuje na tabulky v relační databázi. Doctrine dokáže mapovat celou řadu OOP konceptů jako dědičnost a kompozici.
-
-Uživatele máme řešené dědičností tak, že třídy \codename{Student} a \codename{Teacher} dědí z abstraktní třídy \codename{ImportedPerson} a ta dědí ze třídy \codename{User}. Takto uspořádaná hierarchie tříd má řadu výhod jako možnost dotazovat všechny importované osoby najednou.   Toto se používá v řešení duplikátu emailu (\ref{postup:deduplikace-emailu}).\improvement{toto se využívá v ... ref} Nevýhoda takovéhoto mapování je zvýšená komplexita pro ORM a potencionální degradace výkonu z databázové strany.
-
-Doctrine je ORM se silnou abstrakcí, což značně komplikuje samotné ukládání. Není totiž podporovaná operace \textsc{upsert} (v databázi PostgreSQL realizovanou pomocí jednoho dotazu \textsc{insert into ... on conflict do update}). Je sice možné užít nativní SQL, ale tím bychom přišli o výhody ORM.
-Nevýhodou je pomalejší ukládání, to se děje kvůli tomu, že Doctrine se snaží vytvořit graf daných entit, Doctrine interně používá identity map na entity takže je vyšší spotřeba RAM.
 
 
-
-\section{Inkrementální import}
-
-Zdroje importů nemusí poskytovat data o celém školním roce, v případě importu ze sestav se jedná o úvazky, kde se střídají skupiny u učitele (na naší škole např. mechatronika).
- Nebo se během školního roku něco nečekaně změní.
-
-Proto umožňujeme inkrementální import, importuje se jen to nové a staré importy nechává nedotčené. Doporučuji dělat import před každým testovacím obdobím. Data ze starých importů není třeba odstraňovat (i staré úvazky, které už nemusí být platné lze hodnotit). 
-
-Entity spravované importem implementují interface \codename{ImportedEntity}.
-
-\begin{code}[H]
-\begin{minted}{php}
-  <?php
-    interface ImportedEntity
-    {
-        public function getId(): mixed;
-        public function getImportHash(): ?string;   
-        public function loadImportHash(): string;   
-        public function updateFromSelf(ImportedEntity $old): static;
-    }
-\end{minted}
-\caption{Zdrojový kód \codename{ImportedEntity}}
-\end{code}
-
-V Doctrine se dělají hromadné operace po $N$ operacích. $N$ se dá zvolit experimentem.
-Po každých $N$ operacích se pak zavolají metody \codename{EntityManager.flush()} a \codename{EntityManager.clear()}. Dělá se to po inkrementech, aby \codename{UnitOfWork} byl schopen udělat možné optimalizace a aby se zamezilo zbytečnému procházení grafu entit. Operace clear pak vyčistí graf, to je důležité aby nedošlo k úniku paměti.
-
-\codename{ImportedEntity} má metody loadImportHash ta se používá ke vytvoření import hashe. Import hash se skládá z atributů, které unikátně identifikují danou entitu. Pro import nelze spoléhat na dané atributy, protože uživatel je může prostřednictvím administrace upravit. To by znamenalo, že při dalším importu bude stejná instance entity znovu vytvořena\footnote{Kdyby chtěl uživatel, aby byla při dalším importu vytvořena nová instance entity, může vymazat hodnotu import hashe.}.
-Import hash je využíván třídou \codename{ImportedEntityUpsertProcessor}. Ten se stará o upsert importovaných entit.
-\codename{ImportedEntityUpsertProcessor} načte při upsertu všechny instance ukládané entity.
-Potom vytvoří \codename{entityMap}, což je mapa import hashů na id.
-Pak se prochází instance entit, které byly právě naimportovány a pokud nejsou v \codename{entityMap} tak se uloží pomocí hromadné operace a staré \codename{ImportedEntity} se upraví pomocí metody \codename{updateFromSelf}\footnote{Tato operace nemusí být využita}.
-
-
-\section{Kroky importu}
-
-Kroky importu jsou nezávislé na zdroji importu. 
-Jedná se o wizard, uživatel musí splnit po sobě jdoucí kroky. To jaký krok bude další určuje konečný automat \vizref{uvod:konecny-automat}.
-Na obrázku \ref{postup:import-diagram} je diagram korků importu.
-Pro správu konečného automatu ze Symfony Workflow slouží třída \codename{ImportStateMachine}.
-
-Místo konečného automatu by šla použít sekvence kroků pro daný zdroj dat. To by však znamenalo, že by první krok musel být speciální a typy kroků by musely být předurčeny. Díky konečného automatu, každý krok může rozhodnout o dalším kroku a přechody mezi kroky jsou validovány.
-
-U definice tohoto konečného automatu je v metadatech stavu uložen presenter, který má za úkol zobrazení a zpracování daného stavu. 
-
-\begin{code}
-  \begin{minted}[startinline]{php}
-interface PresenterInterface
-{
-    public function getView(): View;
-    public function process(Request $request): void;
-    public function handleSkipRequest(): void;
-}
- 
-    \end{minted}
-    \caption{Zdrojový kód \codename{PresenterInterface}}
-
-\end{code}
-
-
-Presentery jednotlivých kroků jsou buď přímo implementují interface nebo dědí z abstraktních tříd
-pro jednotlivé použité frontendové technologie (\codename{LiveComponentPresenter}, \codename{FormPresenter}).
-
-Tím, že presenter vrací pohled je možné, aby krok importu vypadal jakkoliv.
-K importu bylo využito hodně knihoven ze Symfony UX.
-Je použit Symfony Form na většinu formulářů v importu.
-Na spojování skupin používám LiveComponent, takže celý import obsahuje jen minimum JavaScriptu.
-
-Zpracování jednotlivých kroků může trvat dlouho, a proto používám na přechody mezi kroky Hotwire Turbo \vizref{ux-turbo}.
-Kolečko znázorňující načítaní se ukazuje když je má na sobě element \codename{turbo-frame} stav \codename{busy}, to nastává když turbo čeká na odpověď od serveru.
-Celý krok je v HTML elementu \codename{turbo-frame}, ten je při odeslání formu nahrazen novým framem\footnote{Není úplně nahrazen, ale je pomocí DOM morph knihovny upraven}.
-
-
-\clearpage
-
-\begin{figure}
-	\centering
-\resizebox{!}{0.95\textheight}{\huge{\input{sections/graph.tex}}}
-  \caption{Diagram konečného automatu pro koky importu}
-  \label{postup:import-diagram}
-\end{figure}
-
-
-\clearpage
-
-\section{Generování emailů z uživatelských dat}
+\subsection{Generování emailů z uživatelských dat}
 
 Tím, že zdroje importu nemusí nutně poskytovat email, umožňuji generování emailu.
 Emaily se generují jak studentské, tak učitelské.
@@ -329,7 +346,7 @@ Tento krok importu je realizován pomocí Symfony Form. Zajímavý je vstup do k
 
 To pole využívá editor Ace, který je velice přizpůsobitelný, ať už vzhledově nebo funkčně. Rozšířil jsem Ace, aby se choval jako formulářový prvek a přidal jsem zvýrazňování emailových výrazů.
 
-\section{Úprava duplicitních emailů}\label{postup:deduplikace-emailu}
+\subsection{Úprava duplicitních emailů}\label{postup:deduplikace-emailu}
 
 Při generování výrazů může nastat duplicita emailů.
 Na naší škole se musí duplicita řešit u zhruba 2\% studentů.
@@ -345,7 +362,7 @@ Ve vnitřním dotazu se vyberou emaily, které nejsou unikátní. V praxi jsem v
 Tento krok je realizován čistě pomocí Symfony Form. Celý formulář se skládá z pole \codename{CollectionType}\unsure{fact check pls} a \codename{SubmitType}.
   Jako typ kolekce je určen typ formuláře pro importované osoby. Takto nastavený Symfony Form jednoduše určí velikost výsledného formuláře na základě počtu prvků v poli. A při zpracování formuláře mi poskytne zvalidované pole importovaných osob.
 
-\section{Spojování skupin}\label{postup:spojovani-skupin}
+\subsection{Spojování skupin}\label{postup:spojovani-skupin}
 
 Tento krok je nutný pouze u importu ze sestav (viz. \ref{postup:import-diagram}).
 V sestavách se nachází pouze informace o učiteli, skupině, třídě a předmětu, nenachází se tam informace o spojení skupin.
