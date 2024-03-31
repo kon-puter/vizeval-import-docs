@@ -334,7 +334,7 @@ Tím, že zdroje importu nemusí nutně poskytovat email, umožňuji generován�
 Emaily se generují jak studentské, tak učitelské.
 
 Emaily se generují pomocí speciálních výrazů.
-Výrazy jsem vymýšlel tak, aby byly pro uživatele co nejjednodušší.
+Výrazy jsou vymýšleny tak, aby byly pro uživatele co nejjednodušší.
 Skládají se z řetězcových proměnných a konstant, hodnoty proměnných a konstant se potom spojí do jednoho výsledného řetězce, který je potom validován zda se jedná o email. V případě, že řetězec není validní email nastaví se u daného uživatele tag vyžaduje úpravu. 
 
 Proměnné jsou ve výrazu ohraničeny \textit{()}. Závorky můžou být validní v emailu pokud je lokální část emailu ohraničena uvozovkami\cite{wiki-email-address}. To by však neměl být problém, jelikož RFC5321 specifikuje, že emailové schránky, které se využívají k přijímaní \unsure{goofy obrat} emailů by neměly mít lokální část ohraničenou uvozovkami\cite{rfc5321}.
@@ -344,7 +344,7 @@ Ukázkový výraz pro studenty naší školy by tedy mohl vypadat takto \textit{
 
 Tento krok importu je realizován pomocí Symfony Form. Zajímavý je vstup do kterého se zadává emailový výraz. Jedná se o samotný formulářový typ, ty se dají do sebe vnořovat a výsledný formulář má taktéž typ formuláře. 
 
-To pole využívá editor Ace, který je velice přizpůsobitelný, ať už vzhledově nebo funkčně. Rozšířil jsem Ace, aby se choval jako formulářový prvek a přidal jsem zvýrazňování emailových výrazů.
+To pole využívá editor Ace, který je velice přizpůsobitelný, ať už vzhledově nebo funkčně. Ace editor je rozšířen, aby se choval jako formulářový prvek s podporou zvýrazňování emailových výrazů.
 
 \subsection{Úprava duplicitních emailů}\label{postup:deduplikace-emailu}
 
@@ -357,7 +357,7 @@ Tento problém mi z velké části pomáhá řešit Doctrine mapováním dědič
 Neprovádí se dotaz s entitou \codename{Student} nebo \codename{Teacher}, ale dotazuje se přímo z entitou \codename{ImportedPerson}\footnote{V Doctrine se dotazuje pomocí DQL a dotazuje se objektový model a ne relační schéma.}.
 Jedná se o vnořený dotaz.
 Vnější dotaz vybere importované osoby, které obsahují email z výsledku vnitřního dotazu (operátor \textsc{IN}).
-Ve vnitřním dotazu se vyberou emaily, které nejsou unikátní. V praxi jsem však dotazy musel rozdělit na dva.\unsure{potencial fix ?}
+Ve vnitřním dotazu se vyberou emaily, které nejsou unikátní. V praxi jsou však dotazy rozděleny na dva.\unsure{potencial fix ?}
 
 Tento krok je realizován čistě pomocí Symfony Form. Celý formulář se skládá z pole \codename{CollectionType}\unsure{fact check pls} a \codename{SubmitType}.
   Jako typ kolekce je určen typ formuláře pro importované osoby. Takto nastavený Symfony Form jednoduše určí velikost výsledného formuláře na základě počtu prvků v poli. A při zpracování formuláře mi poskytne zvalidované pole importovaných osob.
@@ -390,7 +390,7 @@ Např. Nechť máme třídy $A$ a $B$, kde chlapci a děvčata mají rozdělený
 \end{table}
 
 Z takového výčtu nelze poznat jak jsou skupiny spojeny.
-Proto jsem vytvořil tento krok. 
+To je důvod vzniku tohoto kroku.
 Seskupování funguje následovně.
 První si administrátor zvolí kombinaci \textit{třídy-předmět-učitel}, které přiřadí skupiny. 
 Když se jedná o úvazek, který je učen zvlášť přidá další kombinaci \textit{třídy-předmět-učitel}. Administrátor toto opakuje dokud nepřiřadí všechny skupiny.
