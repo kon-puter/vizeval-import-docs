@@ -13,7 +13,6 @@
  % \usepackage[czech]{babel}
 % Packages
 \usepackage{float}
-\usepackage[czech]{babel}
 \usepackage{fvextra}
 \usepackage[autostyle=true,czech=quotes]{csquotes} % korektni sazba uvozovek, podpora pro balik biblatex
 \usepackage[backend=biber, style=iso-numeric, alldates=iso,
@@ -35,6 +34,10 @@ sortlocale=cs-CZ %sorts according to czech alphabet
 \usepackage{etoolbox}
 
 \usepackage{pgf-pie}
+
+
+% Hyphenate in texttt
+\usepackage[htt]{hyphenat}
 
 %allows including of external tex files
 %used to include sections
@@ -63,7 +66,6 @@ sortlocale=cs-CZ %sorts according to czech alphabet
 
 
 % needs LuaTex
-\babelprovide[transforms = oneletter.nobreak]{Czech} 
 % \babelprovide[transforms = hyphen.repeat]{czech}
 
 
@@ -85,8 +87,11 @@ sortlocale=cs-CZ %sorts according to czech alphabet
   \end{listing}  
 }
 
-\BeforeBeginEnvironment{minted}{\begin{tcolorbox}}%
-\AfterEndEnvironment{minted}{\end{tcolorbox}}%
+\newtcolorbox{mybox}{colback=white, colframe=black} 
+
+
+\BeforeBeginEnvironment{minted}{\begin{mybox}}%
+\AfterEndEnvironment{minted}{\end{mybox}}%
 
 % Parameters
 \ThesisAuthor{Marek Konrád}
@@ -127,7 +132,6 @@ Je koncipován pro prostředí středních škol.
 \Acknowledgement{Rád bych poděkoval Davidovi Moškořovi a Honzovi Radovi za spolupráci na tomto projektu. Děkuji panu učiteli Miarkovi za vedení práce. A v neposlední řadě děkuji vedení školy za možnost testovacího nasazení. }
 
 
-
 \begin{document}
 
 
@@ -138,7 +142,7 @@ Je koncipován pro prostředí středních škol.
 \subfile{sections/uvod/podobne-projekty.tex}
 
 
-\chapter{Postup vytvoření}
+\chapter{Tvorba aplikace}
 \subfile{sections/uvod/pouzite-technologie.tex}
 \subfile{sections/postup}
 

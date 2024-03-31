@@ -51,14 +51,21 @@ Tato entita je nutná, aby bylo možné opustit import a později se k němu vr�
 
 Údaje o importech se nachází v \codename{ImportStatus}. Ten má relace na všechny \codename{ImportedEntity}, aby byl znám původ instance dané entity.
 
-Přikládám ER diagram (\improvement{pridat er diagram ref}). Jedná se pouze o schéma databáze, jak ho Doctrine namapovala.
+Přikládám ER diagram (obrázek \ref{postup:er-diagram}\improvement{pridat er diagram ref}). Jedná se pouze o schéma databáze, jak ho Doctrine namapovala.
 
-Nejde v něm vidět dědičnost u uživatelů, dědičnost je mapována strategií Class Table Inharitance\cite{P-of-EAA}.
+Nejde v něm vidět dědičnost u uživatelů, která je mapována strategií Class Table Inharitance\cite{P-of-EAA}.
 
 
 
 \improvement{Vložit schéma db: }
 
+
+\begin{sidewaysfigure}
+	\centering
+  \resizebox{0.95\textwidth}{!}{\huge{\input{Figures/er-diagram.tex}}}
+  \caption{ER diagram}
+  \label{postup:er-diagram}
+\end{sidewaysfigure}
 
 
 \section{Způsoby importu}

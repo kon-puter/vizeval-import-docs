@@ -111,6 +111,9 @@
 \DeclareOption*{\PassOptionsToClass{\CurrentOption}{book}}
 \ProcessOptions
 \RequirePackage[\the\Dipl@BabelLanguageOptions]{babel}
+\babelprovide[transforms = oneletter.nobreak]{czech} 
+\babelprovide[transforms = hyphen.repeat]{czech}
+
 \geometry{a4paper}
 \newgeometry{paper=a4paper, twoside=false, includefoot, nohead, nomarginpar, left=25mm, right=25mm, top=25mm, bottom=25mm}
 \savegeometry{Dipl@OneSide}
