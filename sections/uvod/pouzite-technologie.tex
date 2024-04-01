@@ -1,19 +1,18 @@
 
 \section{Použité technologie}
-\improvement{pořád se opakuje používáme, první osoba na popis postupu }
 
 Aplikace používá framework \href{https://symfony.com/}{Symfony}.
 Symfony je open-source PHP framework, který je vydán pod MIT licencí.
 Využívá návrhový vzor MVC a moderní PHP.
-Symfony je modulární a jednoduše rozšiřitelný pomocí existujících bundlů/componentů, klade důraz na možnost konfigurace a standardizaci.
+Symfony je modulární a jednoduše rozšiřitelný pomocí existujících bundlů/componentů, klade důraz na možnost konfigurace a~standardizaci.
 To je jeden z hlavních důvodů, proč byl tento framework vybrán.
 Používá ho přes 600000 vývojářů a má 713M stažení měsíčně.\cite{symfony:what-is}
 Již spoustu problémů řeší za nás a zamezuje tím bezpečnostním a jiným chybám.
 
 
 \subsection{Databáze}
-Jako persistance vrstvu používáme Doctrine ORM, to nám poskytuje řadu výhod jako typesafe mapování a nezávislost na databázi\footnote{Doctrine ORM aktuálně podporuje PostgreSQL, MySQL, Oracle, SQL server a další\cite{doctrine-supported-dbs}}.
-S Doctrine používáme přístup code first, napíšeme standardní PHP třídu, kde pomocí atributů přidáme informace o mapování. 
+Jako persistance vrstva je použita Doctrine, jedná se o ORM, ta nám poskytuje řadu výhod jako typesafe mapování a nezávislost na databázi\footnote{Doctrine ORM aktuálně podporuje PostgreSQL, MySQL, Oracle, SQL server a další\cite{doctrine-supported-dbs}}.
+Aplikace Doctrine využívá přístup code first, kde do standardní PHP třídy pomocí atributů přidáme informace o mapování. 
 
 Pro uchovávání dat používáme relační databázi PostgreSQL, ta podporuje pokročilejší funkce jako transakce DDL narozdíl od MySQL.  
 
@@ -32,11 +31,11 @@ EasyAdmin umožňuje změnit vzhled přepsáním výchozích templatů.
 
 
 \subsection{Serverové technologie}
-Jako web server používáme FrankenPHP, moderní PHP server založený na serveru Caddy.
+Jako web server je použit FrankenPHP, moderní PHP server založený na serveru Caddy.
 FrankenPHP podporuje worker mode, který umožňuje znovu použití PHP interpretoru při dalším requestu. Kvůli toho je důležité, aby v služby v DI kontejneru byly bezstavové nebo byly označeny \codename{kernel.reset} tagem.
-Další funkcí je podpora Early hints, což dovoluje prohlížeči přednačíst ostatní zdroje před vrácením finální odpovědi.
+Další funkcí je podpora Early hints, což dovoluje prohlížeči přednačíst ostatní zdroje před vrácením finální odpovědi serveru.
 
-Naše aplikace je nasazována pomocí dockeru. Pro každou školu máme zvlášť container s databázovým a webovým serverem.
+Naše aplikace je nasazována pomocí dockeru. Pro každou školu máme zvlášť kontejner s databázovým a webovým serverem.
 Jako reverse proxy používáme Traefic, který nám umožňuje jednoduchou správu instancí.
 
 \subsection{Frontendové technologie}
@@ -50,11 +49,11 @@ Pro připojení kontroleru se označní HTML prvek, na který se má kontroler p
 Taky používám Hotwire Turbo\label{ux-turbo}, které napodobuje funkcionalitu SPA bez přidané komplexity. Turbo funguje skvěle se Stimulusem.
 Na některé části importu je použit LiveComponent, což je něco jako Phoenix LiveWire, kde je uživatelské rozhraní řízeno přímo ze strany serveru. 
 Většina formulářů je sestavena pomocí Symfony Form, ten se potom stará o mapování vstupu a validaci\footnote{Na validaci používá Symfony Validator.}.
-Symfony Form vygeneruje přímo HTML form se všemi potřebnými náležitostmi jako zpracování chyb a stylování\footnote{Jako styl je možno specifikovat template. My používáme Bootstrap}, taky zamezuje XSRF útokům\footnote{Do formuláře vkládá XSRF token, který potom validuje.}.
+Symfony Form vygeneruje přímo HTML formulář se všemi potřebnými náležitostmi jako zpracování chyb a stylování\footnote{Jako styl je možno specifikovat template. My používáme Bootstrap}, taky zamezuje XSRF útokům\footnote{Do formuláře vkládá XSRF token, který potom validuje.}.
 
 \subsection{Konečný automat}\label{uvod:konecny-automat}
-  \unsure{ODPAD!!!}
-Je matematický výpočetní model , který může být v právě jednom stavu.\cite{wiki:finite-state-machine-en} Když automat přechází z jednoho stavu do druhého nazývá se to přechod (transition).
+Je matematický výpočetní model, který se nachází v právě jednom stavu.\cite{wiki:finite-state-machine-en}
+Když automat přechází z jednoho stavu do druhého nazývá se to přechod (transition).
 Automat se nazývá konečným, protože má jen konečný počet stavů.
 Využívají se pro parsování formálních jazyků a jsou užitečné při modelování logiky aplikace.
 Mezi konkrétní využití patří parsování regularních výrazů.\cite{wiki:finite-state-machine-cz}

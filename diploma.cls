@@ -295,21 +295,22 @@
 \titleformat{\subsubsection}{\sffamily\normalsize\bfseries}{\thesubsubsection}{1em}{}
 \titleformat{\paragraph}[runin]{\sffamily\normalsize\bfseries}{\theparagraph}{1em}{}
 \titleformat{\subparagraph}[runin]{\sffamily\normalsize\bfseries}{\thesubparagraph}{1em}{}
-\newcommand{\Dipl@OldAppendix}{\appendix}
-\renewcommand{\appendix}
-{
-    \Dipl@OldAppendix
-    \Dipl@LanguageDependentText
-    {
-        \addcontentsline{toc}{chapter}{Přílohy}
-    }
-    {
-        \addcontentsline{toc}{chapter}{Prílohy}
-    }
-    {
-        \addcontentsline{toc}{chapter}{Appendices}
-    }
-}
+%  % \newcommand{\Dipl@OldAppendix}{\appendix}
+% \renewcommand{\appendix}
+% {
+%         \Dipl@appendix
+%     % \appendix
+%     \Dipl@LanguageDependentText
+%     {
+%         \addcontentsline{toc}{chapter}{Přílohy}
+%     }
+%     {
+%         \addcontentsline{toc}{chapter}{Prílohy}
+%     }
+%     {
+%         \addcontentsline{toc}{chapter}{Appendices}
+%     }
+% }
 \newcommand{\Dipl@LanguageDependentText}[3]{\ifthenelse{\value{Dipl@CurrentThesisLanguage}=\Dipl@CzechLanguage}{#1}{\ifthenelse{\value{Dipl@CurrentThesisLanguage}=\Dipl@SlovakLanguage}{#2}{#3}}}
 \newcommand{\Dipl@AddTokens}[2]{\expandafter \global#1\expandafter{\the#1#2}}
 \catcode30=12

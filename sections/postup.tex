@@ -1,5 +1,5 @@
+\newpage
 \section{Upřesnění požadavků škol}
-\change{rephrase}
 Byl vytvořen Google formulář, který primárně zjišťoval informace o školním systému. Pomocí vedení školy byl pak rozeslán na spřátelené střední školy. 
 \subsection{Výsledky průzkumu informačních systémů středních škol}
 Na dotazník odpovědělo 13 škol z Moravskoslezského kraje. Těší nás, že 12 škol projevilo zájem o vývoj Vizevalu.
@@ -50,7 +50,7 @@ Tato entita je nutná, aby bylo možné opustit import a později se k němu vr�
 
 Údaje o importech se nachází v \codename{ImportStatus}. Ten má relace na všechny \codename{ImportedEntity}, aby byl znám původ instance dané entity, to je důležité při zrušení importu (viz. \ref{postup:zruseni-importu}).
 
-Přikládám ER diagram (obrázek \ref{postup:er-diagram}\improvement{pridat er diagram ref}). Jedná se pouze o schéma databáze, jak ho Doctrine namapovala.
+Přikládám ER diagram (obrázek \ref{postup:er-diagram}). Jedná se pouze o schéma databáze, jak ho Doctrine namapovala.
 
 Nejde v něm vidět dědičnost u uživatelů, která je mapována strategií Class Table Inharitance. Tato strategie je nutná, protože relační databáze nepodporují dědičnost. Proto pro každou třídu je zvlášť tabulka.\cite{P-of-EAA}
 V našem případě je tato stratgie využita u entit \codename{User}, \codename{ImportedPerson}, \codename{Teacher}, \codename{Student}. 
@@ -67,12 +67,11 @@ V našem případě je tato stratgie využita u entit \codename{User}, \codename
 % \end{figure}
 
 
-\improvement{Vložit schéma db: }
 
 
 \begin{sidewaysfigure}
 	\centering
-  \resizebox{0.95\textwidth}{!}{\huge{\input{Figures/er-diagram.tex}}}
+  \includegraphics[width=1\textwidth]{Figures/database.png}
   \caption{ER diagram}
   \label{postup:er-diagram}
 \end{sidewaysfigure}
@@ -183,7 +182,6 @@ Tím, že presenter vrací pohled je možné, aby krok importu vypadal jakkoliv.
 K importu bylo využito hodně knihoven ze Symfony UX.
 Je použit Symfony Form na většinu formulářů v importu.
 \unsure{Dej to do spojování skupin}
-Na spojování skupin používám LiveComponent, takže celý import obsahuje jen minimum JavaScriptu.
 
 Zpracování jednotlivých kroků může trvat dlouho, a proto používám na přechody mezi kroky Hotwire Turbo \vizref{ux-turbo}.
 Kolečko znázorňující načítaní se ukazuje, když má na sobě element \codename{turbo-frame} stav \codename{busy}, to typicky nastává když turbo čeká na odpověď od serveru.
@@ -384,7 +382,7 @@ V případě, že řetězec není validní email nastaví se u daného uživatel
 
 Proměnné jsou ve výrazu ohraničeny \textit{()}.
 Závorky můžou být validní v emailu pokud je lokální část emailu ohraničena uvozovkami\cite{wiki-email-address}.
-To by však nemělo omezit kompatibilitu výrazů, jelikož RFC5321 specifikuje, že emailové schránky, které se využívají k přijímaní \unsure{goofy obrat} emailů by neměly mít lokální část ohraničenou uvozovkami\cite{rfc5321}.
+To by však nemělo omezit kompatibilitu výrazů, jelikož RFC5321 specifikuje, že emailové schránky, které se využívají k přijímaní emailů by neměly mít lokální část ohraničenou uvozovkami\cite{rfc5321}.
 
 Proměnná se dá vložit celá \textit{(jmeno)}, znak \textit{(jmeno[1])} nebo rozsah znaků \textit{(jmeno[1:3])}.
 Ukázkový výraz pro studenty naší školy by tedy mohl vypadat takto \textit{(jmeno[1]).(prijmeni).st@spseiostrava.cz}.
@@ -411,9 +409,9 @@ Tento problém mi z velké části pomáhá řešit Doctrine mapováním dědič
 Neprovádí se dotaz s entitou \codename{Student} nebo \codename{Teacher}, ale dotazuje se přímo z entitou \codename{ImportedPerson}\footnote{V Doctrine se dotazuje pomocí DQL a dotazuje se objektový model a ne relační schéma.}.
 Jedná se o vnořený dotaz.
 Vnější dotaz vybere importované osoby, které obsahují email z výsledku vnitřního dotazu (operátor \textsc{IN}).
-Ve vnitřním dotazu se vyberou emaily, které nejsou unikátní. V praxi jsou však dotazy rozděleny na dva.\unsure{potencial fix ?}
+Ve vnitřním dotazu se vyberou emaily, které nejsou unikátní. V praxi jsou však dotazy rozděleny na dva.
 
-Tento krok je realizován čistě pomocí Symfony Form. Celý formulář se skládá z pole \codename{CollectionType}\unsure{fact check pls} a \codename{SubmitType}.
+Tento krok je realizován čistě pomocí Symfony Form. Celý formulář se skládá z pole \codename{CollectionType} a \codename{SubmitType}.
 Jako typ kolekce je určen typ formuláře pro importované osoby.
 Takto nastavený Symfony Form jednoduše určí velikost výsledného formuláře na základě počtu prvků v poli.
 A při zpracování formuláře poskytne zvalidované pole importovaných osob.
@@ -450,6 +448,8 @@ To je důvod vzniku tohoto kroku.
 Seskupování funguje následovně.
 První administrátor zvolí kombinaci \textit{třídy-předmět-učitel}, které přiřadí skupiny. 
 Když se jedná o úvazek, který je učen zvlášť přidá další kombinaci \textit{třídy-předmět-učitel}. Administrátor toto opakuje dokud nepřiřadí všechny skupiny.
+
+Na spojování skupin používám LiveComponent, takže celý import obsahuje jen minimum JavaScriptu.
 
 \section{Zrušení importu}\label{postup:zruseni-importu}
 
